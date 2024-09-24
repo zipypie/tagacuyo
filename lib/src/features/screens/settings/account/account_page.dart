@@ -100,9 +100,9 @@ class _AccountPageState extends State<AccountPage> {
       setState(() {
         _isEditing = true; // Allow editing if password is correct
       });
-      _showSnackBar('Na-verify ang password. Maaari mo na ngayong i-edit ang iyong data.');
+      _showSnackBar('Password verified. You can now edit your data.');
     } catch (e) {
-      _showSnackBar('Di-wastong password. Pakisubukang muli.');
+      _showSnackBar('Incorrect password. Please try again.');
     }
   }
 
@@ -126,15 +126,17 @@ class _AccountPageState extends State<AccountPage> {
         title: Text('Account'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.fromLTRB(20.0, 30.0, 20.0, 30.0), // Added top and bottom padding
         child: _user == null
             ? Center(child: CircularProgressIndicator())
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildProfilePicture(),
+                  SizedBox(height: 20), // Added spacing between elements
                   _buildEditableField("E-mail", _emailController),
-                  _buildPasswordField("Bagong Password", _newPasswordController),
+                  SizedBox(height: 10), // Added spacing between elements
+                  _buildPasswordField("New Password", _newPasswordController),
                   SizedBox(height: 20),
                   Center(
                     child: ElevatedButton(
@@ -143,7 +145,7 @@ class _AccountPageState extends State<AccountPage> {
                         padding: EdgeInsets.symmetric(horizontal: 60, vertical: 15),
                       ),
                       onPressed: _isEditing ? _saveUserData : _askForPassword,
-                      child: Text(_isEditing ? "I-save" : "I-edit"),
+                      child: Text(_isEditing ? "Save" : "Edit"),
                     ),
                   ),
                 ],
@@ -177,15 +179,18 @@ class _AccountPageState extends State<AccountPage> {
 
   Widget _buildEditableField(String label, TextEditingController controller) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           TextFormField(
             controller: controller,
             decoration: InputDecoration(
               enabled: _isEditing, // Allow editing only when _isEditing is true
+              border: OutlineInputBorder(), // Added border for better visibility
+              filled: true,
+              fillColor: Colors.grey[200], // Light grey background
             ),
           ),
         ],
@@ -195,17 +200,20 @@ class _AccountPageState extends State<AccountPage> {
 
   Widget _buildPasswordField(String label, TextEditingController controller) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           TextFormField(
             controller: controller,
             obscureText: true,
             enabled: _isEditing, // Enable editing only after the password is verified
             decoration: InputDecoration(
               hintText: '********',
+              border: OutlineInputBorder(), // Added border for better visibility
+              filled: true,
+              fillColor: Colors.grey[200], // Light grey background
             ),
           ),
         ],

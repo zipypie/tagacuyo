@@ -8,7 +8,7 @@ import 'package:taga_cuyo/src/features/common_widgets/bottom_navigation.dart';
 import 'package:taga_cuyo/src/features/screens/get_started/get_started.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/home.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile.dart';
-import 'package:taga_cuyo/src/features/screens/main_screens/translator.dart';
+import 'package:taga_cuyo/src/features/screens/main_screens/translator/translator.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -75,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
     HomeScreenPage(),
     Text('Lesson Page'),
     Text('Category Page'),
-    TranslationScreen(),
+    TranslatorScreen(),
   ];
 
   @override
