@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
-import 'package:taga_cuyo/src/features/screens/settings/logout.dart';
+import 'package:taga_cuyo/src/features/screens/settings/account/account_page.dart';
+import 'package:taga_cuyo/src/features/screens/settings/feedback/feedback.dart';
+import 'package:taga_cuyo/src/features/screens/settings/logout/logout.dart';
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({super.key});
@@ -26,7 +28,11 @@ class _SettingScreenState extends State<SettingScreen> {
             ),
           ),
           onTap: () {
-            // Handle account settings tap
+            // Navigate to the Feedback screen
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AccountPage()),
+            );
           },
         ),
 
@@ -41,7 +47,11 @@ class _SettingScreenState extends State<SettingScreen> {
             ),
           ),
           onTap: () {
-            // Handle feedback tap
+            // Navigate to the Feedback screen
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FeedbackScreen()),
+            );
           },
         ),
 

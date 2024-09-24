@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
 import 'package:taga_cuyo/src/features/screens/settings/settings.dart';
 
 void showSettingsDialog(BuildContext context) {
@@ -16,16 +15,7 @@ void showSettingsDialog(BuildContext context) {
           child: Column(
             mainAxisSize: MainAxisSize.min, // Minimize dialog height
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Settings',
-                style: TextStyle(
-                  fontFamily: AppFonts.kanitLight,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 20), // Space between title and options
+            children: [ // Space between title and options
               SettingScreen(), // Embed the settings screen inside dialog
             ],
           ),

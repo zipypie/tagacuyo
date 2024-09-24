@@ -12,8 +12,8 @@ import 'package:taga_cuyo/src/features/screens/main_screens/translator.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(const MyApp());
+  await Firebase.initializeApp(); // Initialize Firebase
+  runApp(MyApp());
 }
 
 // Initialize content of the app
@@ -43,7 +43,10 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.active) {
           // If user is logged in, show HomeScreen; otherwise, show GetStartedScreen
           return snapshot.hasData
-              ? HomeScreen(uid: snapshot.data!.uid, userData: const {},) // Pass the actual UID
+              ? HomeScreen(
+                  uid: snapshot.data!.uid,
+                  userData: const {},
+                ) // Pass the actual UID
               : const GetStartedScreen();
         }
         // Show a loading indicator while waiting for authentication state
@@ -57,7 +60,8 @@ class AuthWrapper extends StatelessWidget {
 class HomeScreen extends StatefulWidget {
   final String uid; // Accept uid as a parameter
 
-  const HomeScreen({super.key, required this.uid, required Map<String, dynamic> userData});
+  const HomeScreen(
+      {super.key, required this.uid, required Map<String, dynamic> userData});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();

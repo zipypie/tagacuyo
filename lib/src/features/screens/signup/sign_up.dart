@@ -37,7 +37,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
 
     // Sign up the user using the AuthServicews
-    String res = await AuthServicews().signUpUser(
+    String res = await AuthService().signUpUser(
       firstname: firstnameController.text,
       lastname: lastnameController.text,
       email: emailController.text,

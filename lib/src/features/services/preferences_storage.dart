@@ -60,4 +60,6 @@ class UserService {
       return [];
     }
   }
+
+  updateUserEmail(String uid, String text) {}
 }

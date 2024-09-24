@@ -1,10 +1,53 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// auth_service.dart
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class AuthServicews {
-  // For storing data in Cloud Firestore
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Get the current user
+  User? get currentUser => _auth.currentUser;
+
+  // Fetch user data from Firestore
+  Future<DocumentSnapshot?> getUserData() async {
+    if (currentUser != null) {
+      return await _firestore.collection('users').doc(currentUser!.uid).get();
+    }
+    return null;
+  }
+
+  // Update user email in Firestore
+  Future<void> updateUserEmail(String email) async {
+    if (currentUser != null) {
+      await _firestore.collection('users').doc(currentUser!.uid).update({
+        'email': email,
+      });
+    }
+  }
+
+  // Reauthenticate user
+  Future<void> reauthenticateUser(String password) async {
+    if (currentUser != null) {
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: currentUser!.email!,
+        password: password,
+      );
+      await currentUser!.reauthenticateWithCredential(credential);
+    }
+  }
+
+  // Update user email in Firebase Auth
+  Future<void> updateFirebaseUserEmail(String email) async {
+    if (currentUser != null) {
+      await currentUser!.updateEmail(email);
+    }
+  }
+
+  // Sign out the user
+  Future<void> signOut() async {
+    await _auth.signOut();
+  }
 
   // Sign up a user
   Future<String> signUpUser({
@@ -64,6 +107,4 @@ class AuthServicews {
     }
     return res;
   }
-
-
 }

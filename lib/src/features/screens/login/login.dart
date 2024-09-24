@@ -49,7 +49,7 @@ class _SignInScreenState extends State<SignInScreen> {
     });
 
     // Sign in the user using the AuthServicews
-    Map<String, dynamic> res = await AuthServicews().signInUser(
+    Map<String, dynamic> res = await AuthService().signInUser(
       email: emailController.text,
       password: passwordController.text,
     );
