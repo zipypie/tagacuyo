@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "598478516019",
+    "project_id": "tagalog-cuyonon-mobile-app",
+    "storage_bucket": "tagalog-cuyonon-mobile-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:598478516019:android:2a16f0b62f77b763305846",
+        "android_client_info": {
+          "package_name": "com.example.taga_cuyo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdpAcj1JpgEpyg0qznduUgYM0DAnfrdAI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
