@@ -28,15 +28,15 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.play_lesson),  
-          label: 'Lesson',
+          label: 'Aralin',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.category),
-          label: 'Category',
+          label: 'Kategorya',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.translate),
-          label: 'Translator',
+          label: 'Tagasalin',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),

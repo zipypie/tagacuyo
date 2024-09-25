@@ -4,14 +4,31 @@ class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<DocumentSnapshot?> getUserById(String userId) async {
-    return await _firestore.collection('users').doc(userId).get();
+    try {
+      DocumentSnapshot document = await _firestore.collection('users').doc(userId).get();
+      return document.exists ? document : null;
+    } catch (e) {
+      print('Error fetching user by ID: $e');
+      return null;
+    }
   }
 
   Future<void> updateUserEmail(String userId, String newEmail) async {
-    await _firestore.collection('users').doc(userId).update({'email': newEmail});
+    try {
+      await _firestore.collection('users').doc(userId).update({'email': newEmail});
+      print('User email updated successfully');
+    } catch (e) {
+      print('Error updating user email: $e');
+    }
   }
 
   Future<List<DocumentSnapshot>> searchUsersByEmail(String email) async {
-    return await _firestore.collection('users').where('email', isEqualTo: email).get().then((snapshot) => snapshot.docs);
+    try {
+      QuerySnapshot snapshot = await _firestore.collection('users').where('email', isEqualTo: email).get();
+      return snapshot.docs;
+    } catch (e) {
+      print('Error searching users by email: $e');
+      return [];
+    }
   }
 }

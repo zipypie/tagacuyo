@@ -37,7 +37,7 @@ class LogoutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text("Log Out"),
-      content: const Text("Are you sure you want to log out?"),
+      content: const Text("Sigurado ka bang gusto mong mag-log out?"),
       actions: [
         TextButton(
           child: const Text("Cancel"),

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:taga_cuyo/main.dart';
 import 'package:taga_cuyo/src/features/common_widgets/button.dart';
 import 'package:taga_cuyo/src/features/common_widgets/snack_bar.dart';
 import 'package:taga_cuyo/src/features/common_widgets/text_input.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/screens/forget_password/forget_password.dart';
+import 'package:taga_cuyo/src/features/screens/main_screens/home/home_screen.dart';
 import 'package:taga_cuyo/src/features/screens/signup/sign_up.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
 import 'package:taga_cuyo/src/features/services/authentication.dart';

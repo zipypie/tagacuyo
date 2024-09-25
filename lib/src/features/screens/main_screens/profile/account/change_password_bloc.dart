@@ -2,8 +2,8 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:taga_cuyo/src/features/services/user_service.dart';
-import 'account_event.dart';
-import 'account_state.dart';
+import 'change_password_event.dart';
+import 'change_password_state.dart';
 
 class AccountBloc extends Bloc<AccountEvent, AccountState> {
   final UserService _userService = UserService();
@@ -19,7 +19,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
         if (userDoc != null) {
           yield AccountLoaded(userDoc['email'] ?? _user.email!);
         } else {
-          yield AccountError('User not found');
+          yield const AccountError('User not found');
         }
       } catch (e) {
         yield AccountError(e.toString());
@@ -29,7 +29,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
       try {
         List<DocumentSnapshot> existingUsers = await _userService.searchUsersByEmail(event.email);
         if (existingUsers.isNotEmpty && existingUsers[0].id != _user!.uid) {
-          yield AccountError('Email is already in use by another account.');
+          yield const AccountError('Email is already in use by another account.');
           return;
         }
 
