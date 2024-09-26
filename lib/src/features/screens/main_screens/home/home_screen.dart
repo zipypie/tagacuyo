@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     // Add ProfileScreenPage with the actual UID
     final List<Widget> pagesWithProfile = List.from(_widgetOptions)
-      ..add(ProfileScreenPage(uid: widget.uid)); // Add ProfileScreenPage
+      ..add(ProfileScreen(uid: widget.uid)); // Add ProfileScreenPage
 
     void onItemTapped(int index) {
       setState(() {
