@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:taga_cuyo/src/features/common_widgets/text_input.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
-import 'package:taga_cuyo/src/features/services/user_service.dart';
 // Ensure this path is correct
 
 class ChangePasswordScreen extends StatefulWidget {
@@ -17,7 +16,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _currentPasswordController = TextEditingController();
-  final UserService _userService = UserService();
   bool _isEditing = false; // Track if editing mode is active
 
   @override

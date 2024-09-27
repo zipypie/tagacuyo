@@ -3,12 +3,14 @@ import 'package:taga_cuyo/src/features/common_widgets/button.dart';
 import 'package:taga_cuyo/src/features/common_widgets/snack_bar.dart';
 import 'package:taga_cuyo/src/features/common_widgets/text_input.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
+import 'package:taga_cuyo/src/features/constants/logo.dart';
 import 'package:taga_cuyo/src/features/screens/forget_password/forget_password.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/home/home_screen.dart';
 import 'package:taga_cuyo/src/features/screens/signup/sign_up.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
 import 'package:taga_cuyo/src/features/services/authentication.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -96,7 +98,7 @@ Widget build(BuildContext context) {
             SizedBox(
               width: double.infinity,
               height: height / 3,
-              child: Image.asset('assets/icons/tagacuyo_logo.png'),
+              child: LogoImage.logo,
             ),
             Container(
               margin: const EdgeInsets.all(30),

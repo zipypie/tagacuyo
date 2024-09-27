@@ -1,5 +1,4 @@
-// auth_service.dart
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart'; 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthService {
@@ -49,7 +48,7 @@ class AuthService {
     await _auth.signOut();
   }
 
-  // Sign up a user
+  // Sign up a user with default values for progress in a separate collection
   Future<String> signUpUser({
     required String firstname,
     required String lastname,
@@ -66,14 +65,26 @@ class AuthService {
         password: password,
       );
 
+      String uid = credential.user!.uid;
+
       // Add user details to Firestore
-      await _firestore.collection('users').doc(credential.user?.uid).set({
+      await _firestore.collection('users').doc(uid).set({
         'firstname': firstname,
         'lastname': lastname,
         'email': email,
         'age': age,
         'gender': gender,
-        'uid': credential.user!.uid,
+        'uid': uid,
+        'date_joined': DateTime.now(),
+      });
+
+      // Add progress details to 'user_progress' collection with default values
+      await _firestore.collection('user_progress').doc(uid).set({
+        'categories': 0,  // Default value
+        'days': 0,        // Default value
+        'lessons': 0,     // Default value
+        'minutes': 0,     // Default value
+        'streak': 0,      // Default value
       });
 
       res = "Success";

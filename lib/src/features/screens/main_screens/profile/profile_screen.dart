@@ -12,7 +12,7 @@ import 'package:taga_cuyo/src/features/services/user_service.dart'; // Ensure to
 class ProfileScreen extends StatelessWidget {
   final String uid;
 
-  const ProfileScreen({Key? key, required this.uid}) : super(key: key);
+  const ProfileScreen({super.key, required this.uid});
 
   @override
   Widget build(BuildContext context) {
@@ -72,9 +72,9 @@ Widget _buildHeader(String name, String dateJoined) {
           Container(
             width: 70, // Width of the circular background
             height: 70, // Height of the circular background
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color.fromARGB(255, 21, 195, 254), // Background color of the circle
+              color: Color.fromARGB(255, 21, 195, 254), // Background color of the circle
             ),
             child: const Center(
               child: Icon(

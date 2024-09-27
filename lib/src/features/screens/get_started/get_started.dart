@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
+import 'package:taga_cuyo/src/features/constants/logo.dart';
 import 'package:taga_cuyo/src/features/screens/login/login.dart';
 
 class GetStartedPage extends StatelessWidget {
@@ -118,19 +119,19 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
     {
       'title': 'Mag-aral ng Wika',
       'text': 'Tuklasin ang yaman ng mga wika at palawakin ang iyong kaalaman sa Tagalog at Cuyonon',
-      'imagePath': 'assets/icons/tagacuyo_logo.png',
+      'imagePath':  LogoImage.logoPath,
       'buttonText': 'Sunod na Pahina',
     },
     {
       'title': 'Agad na Isalin',
       'text': 'Mabilis na isalin ang mga salita at parirala, para sa mas mahusay na komunikasyon!',
-      'imagePath': 'assets/icons/tagacuyo_logo.png',
+      'imagePath':  LogoImage.logoPath,
       'buttonText': 'Sunod na Pahina',
     },
     {
       'title': 'Subaybayan ang Iyong Pag-unlad',
       'text': 'Subaybayan ang iyong progreso sa pag-aaral at makita ang iyong mga tagumpay!',
-      'imagePath': 'assets/icons/tagacuyo_logo.png',
+      'imagePath':  LogoImage.logoPath,
       'buttonText': 'Magsimula',
     },
   ];

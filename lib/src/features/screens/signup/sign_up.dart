@@ -5,6 +5,7 @@ import 'package:taga_cuyo/src/features/common_widgets/snack_bar.dart';
 import 'package:taga_cuyo/src/features/common_widgets/text_input.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
+import 'package:taga_cuyo/src/features/constants/logo.dart';
 import 'package:taga_cuyo/src/features/screens/login/login.dart';
 import 'package:taga_cuyo/src/features/services/authentication.dart';
 
@@ -36,7 +37,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
-    // Sign up the user using the AuthServicews
+    // Sign up the user using the AuthService
     String res = await AuthService().signUpUser(
       firstname: firstnameController.text,
       lastname: lastnameController.text,
@@ -50,11 +51,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (res == "Success") {
       setState(() {
         isLoading = true;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const SignInScreen()),
-        );
       });
+      
+      // Show success dialog
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            content: const Text('Ang iyong account ay matagumpay na nalikha.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close the dialog
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SignInScreen()),
+                  );
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
     } else {
       setState(() {
         isLoading = false;
@@ -77,7 +97,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               SizedBox(
                 width: double.infinity,
                 height: height / 3.5,
-                child: Image.asset('assets/icons/tagacuyo_logo.png'),
+                child: LogoImage.logo,
               ),
               const Center(
                 child: Column(

@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:taga_cuyo/src/features/common_widgets/appbar.dart';
 import 'package:taga_cuyo/src/features/common_widgets/bottom_navigation.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/home/explore_page.dart';
+import 'package:taga_cuyo/src/features/screens/main_screens/lesson/lesson_screen.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/profile_screen.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/translator/translator_screen.dart';
-
-
-
 
 class HomeScreen extends StatefulWidget {
   final String uid; // Accept uid as a parameter
@@ -27,9 +25,18 @@ class _HomeScreenState extends State<HomeScreen> {
   // List of pages/icons that correspond to each tab in the bottom navigation bar
   static final List<Widget> _widgetOptions = <Widget>[
     const ExplorePage(),
-    const Text('Lesson Page'),
+    const LessonScreenPage(),
     const Text('Category Page'),
     TranslatorScreen(),
+  ];
+
+  // List of titles corresponding to each page
+  static final List<String> _titles = <String>[
+    'Home',
+    'Aralin',
+    'Kategorya',
+    'Tagasalin',
+    'Profile',
   ];
 
   @override
@@ -45,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Scaffold(
-      appBar: const AppBarScreen(title: 'Home'),
+      appBar: AppBarScreen(title: _titles[_selectedIndex]), // Pass the title based on the selected index
       body: Stack(
         children: [
           pagesWithProfile.elementAt(_selectedIndex), // Use modified list

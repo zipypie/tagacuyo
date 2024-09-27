@@ -10,6 +10,7 @@ class AppColors {
   static const Color subtitleColor = Color(0xFF676767); // 676767
   static const Color correct = Color(0xFF69F177); // 69F177
   static const Color wrong = Color(0xFFF90909); // F90909
+  static const Color accentColor = Color(0xFF4FC3F7); 
   
   static LinearGradient boxGradient = const LinearGradient(
     colors: [

@@ -54,6 +54,7 @@ flutter:
   assets:
     - assets/fonts/
     - assets/icons/
+    - assets/images/
 
   fonts:
     - family: LilitaOne
@@ -62,3 +63,6 @@ flutter:
     - family: Kanit
       fonts:
         - asset: assets/fonts/Kanit-Light.ttf
+    - family: Roboto-Regular
+      fonts: 
+        - asset:  assets/fonts/Roboto-Regular.ttf
