@@ -108,10 +108,10 @@ class GetStartedScreen extends StatefulWidget {
   const GetStartedScreen({super.key});
 
   @override
-  _GetStartedScreenState createState() => _GetStartedScreenState();
+  GetStartedScreenState createState() => GetStartedScreenState();
 }
 
-class _GetStartedScreenState extends State<GetStartedScreen> {
+class GetStartedScreenState extends State<GetStartedScreen> {
   int currentPage = 0;
   late PageController pageController;
 
@@ -119,19 +119,19 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
     {
       'title': 'Mag-aral ng Wika',
       'text': 'Tuklasin ang yaman ng mga wika at palawakin ang iyong kaalaman sa Tagalog at Cuyonon',
-      'imagePath':  LogoImage.logoPath,
+      'imagePath': LogoImage.logoPath,
       'buttonText': 'Sunod na Pahina',
     },
     {
       'title': 'Agad na Isalin',
       'text': 'Mabilis na isalin ang mga salita at parirala, para sa mas mahusay na komunikasyon!',
-      'imagePath':  LogoImage.logoPath,
+      'imagePath': LogoImage.logoPath,
       'buttonText': 'Sunod na Pahina',
     },
     {
       'title': 'Subaybayan ang Iyong Pag-unlad',
       'text': 'Subaybayan ang iyong progreso sa pag-aaral at makita ang iyong mga tagumpay!',
-      'imagePath':  LogoImage.logoPath,
+      'imagePath': LogoImage.logoPath,
       'buttonText': 'Magsimula',
     },
   ];
@@ -148,7 +148,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
     });
   }
 
-  void goToNextPage() {
+  void goToNextPage(BuildContext context) {
     if (currentPage < pages.length - 1) {
       setState(() {
         currentPage++;
@@ -183,8 +183,8 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
               return GetStartedPage(
                 titleText: pages[index]['title'],
                 text: pages[index]['text'],
-                onNext: goToNextPage,
-                buttonText: pages[index]['buttonText'], // Use dynamic buttonText
+                onNext: () => goToNextPage(context), // Pass context to the method
+                buttonText: pages[index]['buttonText'],
                 imagePath: pages[index]['imagePath'],
               );
             },

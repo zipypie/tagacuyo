@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/lesson/quiz/quiz.dart';
-import 'lesson_bloc.dart'; // Import the BLoC
-import 'lesson_event.dart'; // Import the events
-import 'lesson_state.dart'; // Import the states
+import 'package:taga_cuyo/src/features/services/authentication.dart';
+import 'lesson_bloc.dart';
+import 'lesson_event.dart';
+import 'lesson_state.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
 import 'package:taga_cuyo/src/features/constants/images.dart';
@@ -15,18 +17,54 @@ class LessonScreenPage extends StatefulWidget {
 }
 
 class _LessonScreenPageState extends State<LessonScreenPage> {
+  final AuthService _authService = AuthService();
   late LessonBloc _lessonBloc;
+  int lessonProgress = 0;
+  int maxLength = 0;
 
   @override
   void initState() {
     super.initState();
     _lessonBloc = LessonBloc();
-    _lessonBloc.addEvent(FetchLessonsEvent()); // Trigger fetch on init
+    _lessonBloc.addEvent(FetchLessonsEvent());
+    _fetchLessonData();
+  }
+
+  Future<void> _fetchLessonData() async {
+    String? userId = _authService.getUserId();
+
+    if (userId != null) {
+      try {
+        // Fetch lesson progress
+        DocumentSnapshot userProgressDoc = await FirebaseFirestore.instance
+            .collection('user_progress')
+            .doc(userId)
+            .get();
+
+        if (userProgressDoc.exists) {
+          setState(() {
+            lessonProgress = (userProgressDoc.data() as Map<String, dynamic>?)?['lessons'] ?? 0;
+          });
+        }
+
+        // Fetch max length
+        QuerySnapshot lessonsSnapshot = await FirebaseFirestore.instance
+            .collection('lessons')
+            .get();
+
+        setState(() {
+          maxLength = lessonsSnapshot.docs.length;
+        });
+      } catch (e) {
+        // Handle errors (e.g., show a message to the user)
+        print("Error fetching lesson data: $e");
+      }
+    }
   }
 
   @override
   void dispose() {
-    _lessonBloc.dispose(); // Dispose the BLoC
+    _lessonBloc.dispose();
     super.dispose();
   }
 
@@ -38,7 +76,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _lessonHeader(context),
-          const SizedBox(height: 20), // Add some space between header and list items
+          const SizedBox(height: 20),
           Expanded(
             child: StreamBuilder<LessonState>(
               stream: _lessonBloc.stateStream,
@@ -51,7 +89,6 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
 
-                // Check the current state
                 if (snapshot.data is LessonLoading) {
                   return const Center(child: Text('Loading lessons...'));
                 } else if (snapshot.data is LessonLoaded) {
@@ -59,9 +96,11 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
                       (snapshot.data as LessonLoaded).lessons;
                   return SingleChildScrollView(
                     child: Wrap(
-                      spacing: 10, // Horizontal space between items
-                      runSpacing: 10, // Vertical space between items
-                      children: lessons.map((lesson) => _lessonListItem(context, lesson)).toList(),
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: lessons
+                          .map((lesson) => _lessonListItem(context, lesson))
+                          .toList(),
                     ),
                   );
                 } else if (snapshot.data is LessonError) {
@@ -81,7 +120,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
   Widget _lessonHeader(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.12,
+      height: MediaQuery.of(context).size.height * 0.14,
       decoration: BoxDecoration(
         gradient: AppColors.boxGradient,
         borderRadius: BorderRadius.circular(15),
@@ -94,26 +133,40 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
           ),
         ],
       ),
-      child: const Padding(
-        padding: EdgeInsets.fromLTRB(25, 0, 0, 0),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(25, 15, 0, 0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start, // Align items to start
-          crossAxisAlignment: CrossAxisAlignment.center, // Align to the top
+          crossAxisAlignment: CrossAxisAlignment.start, // Align to the top
           children: [
             Expanded(
               child: Padding(
-                padding: EdgeInsets.only(right: 10), // Add right padding for space
-                child: Text(
-                  'Maligayang pagdating sa Taga-Cuyo',
-                  style: TextStyles.subtitle,
-                  textAlign: TextAlign.left, // Align text to the left
+                padding: const EdgeInsets.only(right: 40), // Add right padding for space
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start, // Align text to the left
+                  children: [
+                    const Text(
+                      'Maligayang pagdating sa Taga-Cuyo',
+                      style: TextStyles.learningtitle,
+                      textAlign: TextAlign.left, // Align text to the left
+                    ),
+                    SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20),
+                      child: Text(
+                        'Aralin $lessonProgress / $maxLength',
+                        style: TextStyles.sublearningsubtitle,
+                        textAlign: TextAlign.left, // Align text to the left
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               child: CustomImage(
                 src: 'assets/images/monkey.png',
-                width: 100  , // Fixed width for the image
+                width: 100, // Fixed width for the image
                 height: 100,
               ),
             ),
@@ -145,7 +198,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
         height: containerWidth, // Calculate half width minus margin
         margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 6), // Space between items
         decoration: BoxDecoration(
-          color: AppColors.secondaryBackground,
+          color: AppColors.primaryBackground,
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
@@ -164,7 +217,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
             children: [
               Text(
                 '${lesson['id']}', // Use lesson id for the lesson number
-                style: TextStyles.learningtitle,
+                style: TextStyles.learningsubtitle,
               ),
               const CustomImage(
                 src: 'assets/images/monkey.png',
@@ -173,7 +226,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
               ),
               Text(
                 lesson['lesson_name'] ?? 'Unknown Lesson', // Display lesson name safely
-                style: TextStyles.learningtitle,
+                style: TextStyles.learningsubtitle,
                 textAlign: TextAlign.center,
               ),
             ],

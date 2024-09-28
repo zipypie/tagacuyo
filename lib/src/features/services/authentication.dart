@@ -8,6 +8,11 @@ class AuthService {
   // Get the current user
   User? get currentUser => _auth.currentUser;
 
+  // Get the current user's ID
+  String? getUserId() {
+    return currentUser?.uid; // Return the user's ID if they are logged in
+  }
+
   // Fetch user data from Firestore
   Future<DocumentSnapshot?> getUserData() async {
     if (currentUser != null) {

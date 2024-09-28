@@ -14,10 +14,10 @@ class AppColors {
   
   static LinearGradient boxGradient = const LinearGradient(
     colors: [
-      Color(0xFF4FC3F7), // 4FC3F7
-      Color(0xFF2BA7B6), // 2BA7B6     
+      secondaryBackground, // 4FC3F7
+      primary, // 2BA7B6     
    
     ],
-    stops: [0.0, 0.9],
+    stops: [0.4, 0.9],
   );
 }

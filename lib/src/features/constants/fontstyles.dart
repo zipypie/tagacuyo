@@ -7,6 +7,8 @@ class AppFonts {
   static const String lilitaOne = 'LilitaOne';  // Must match the family name in pubspec.yaml
   static const String kanitLight = 'Kanit';  // Must match the family name in pubspec.yaml
   static const String roboto = 'Roboto-Regular';  // Must match the family name in pubspec.yaml
+  static const String feb = 'FEB';
+  static const String fer = 'FER';
 
 }
 
@@ -22,48 +24,25 @@ class TextStyles {
   );
 
   // Subtitle style
-  static const TextStyle subtitle = TextStyle(
-    fontFamily: AppFonts.roboto,
-    fontSize: 21,
+  static const TextStyle learningtitle = TextStyle(
+    fontFamily: AppFonts.feb,
+    fontSize: 20,
     fontWeight: FontWeight.w900,
-    color: Color.fromARGB(255, 0, 0, 0),
+    color: Color.fromARGB(255, 60, 63, 65),
   );
-
-  // Body text style
-  static const TextStyle body = TextStyle(
-    fontFamily: AppFonts.kanitLight,
-    fontSize: 16,
-    fontWeight: FontWeight.normal,
-    color: AppColors.titleColor, // You can adjust the color as needed
-  );
-
-  // Button text style
-  static const TextStyle buttonl = TextStyle(
-    fontFamily: AppFonts.kanitLight,
-    fontSize: 16,
-    fontWeight: FontWeight.bold,
-    color: AppColors.primaryBackground, // Use accent color for buttons
-  );
-
-   static const TextStyle buttond = TextStyle(
-    fontFamily: AppFonts.kanitLight,
-    fontSize: 16,
-    fontWeight: FontWeight.bold,
-    color: AppColors.titleColor, // Use accent color for buttons
-  );
-
-  // Caption style
-  static const TextStyle caption = TextStyle(
-    fontFamily: AppFonts.kanitLight,
+      static const TextStyle learningsubtitle = TextStyle(
+    fontFamily: AppFonts.fer,
     fontSize: 12,
-    fontWeight: FontWeight.normal,
-    color: Color.fromARGB(255, 91, 91, 91), // Light grey color for captions or secondary info
+    color: Color.fromARGB(255, 0, 0, 0), // Light grey color for captions or secondary info
   );
 
-    static const TextStyle learningtitle = TextStyle(
-    fontFamily: AppFonts.kanitLight,
-    fontSize: 14,
-    fontWeight: FontWeight.bold,
-    color: AppColors.titleColor, // Light grey color for captions or secondary info
+        static const TextStyle sublearningsubtitle = TextStyle(
+    fontFamily: AppFonts.feb,
+    fontSize: 16,
+    color: Color.fromARGB(255, 113, 113, 113), // Light grey color for captions or secondary info
   );
+
+
+
+
 }

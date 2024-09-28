@@ -65,3 +65,9 @@ flutter:
     - family: Roboto-Regular
       fonts: 
         - asset:  assets/fonts/Roboto-Regular.ttf
+    - family: FER
+      fonts: 
+        - asset:  assets/fonts/Fredoka_Expanded-Regular.ttf
+    - family: FEB
+      fonts: 
+        - asset:  assets/fonts/Fredoka_SemiCondensed-Bold.ttf

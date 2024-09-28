@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:taga_cuyo/src/features/common_widgets/button.dart';
 import 'package:taga_cuyo/src/features/common_widgets/snack_bar.dart';
@@ -5,6 +7,8 @@ import 'package:taga_cuyo/src/features/common_widgets/text_input.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:taga_cuyo/src/features/constants/images.dart';
+import 'package:taga_cuyo/src/features/constants/logo.dart';
 import 'package:taga_cuyo/src/features/screens/login/login.dart';
 
 class ForgetPasswordScreen extends StatefulWidget {
@@ -20,7 +24,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   String emailError = '';
 
   // Function to send password reset email and check if the email is registered
-  Future<void> sendPasswordResetEmail() async {
+  Future<void> sendPasswordResetEmail(BuildContext context) async {
     if (emailController.text.isEmpty) {
       setState(() {
         emailError = 'Pakilagay ang iyong email.';
@@ -38,8 +42,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
       await FirebaseAuth.instance.sendPasswordResetEmail(
         email: emailController.text,
       );
-      showSnackBar(context,
-          'Naipadala na sa iyong email ang link sa pag-reset ng password.');
+      showSnackBar(context, 'Naipadala na sa iyong email ang link sa pag-reset ng password.');
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         // If no account exists, show an error message
@@ -52,11 +55,11 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
           emailError = 'Error: ${e.message}';
         });
       }
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
-
-    setState(() {
-      isLoading = false;
-    });
   }
 
   @override
@@ -73,7 +76,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
               SizedBox(
                 width: double.infinity,
                 height: height / 3,
-                child: Image.asset('assets/icons/tagacuyo_logo.png'),
+                child: LogoImage.logo,
               ),
               Container(
                 margin: const EdgeInsets.all(30),
@@ -90,7 +93,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                 ),
               ),
               Container(
-                height: height/2.025,
+                height: height / 2.025,
                 padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                 decoration: const BoxDecoration(
                   color: AppColors.secondaryBackground,
@@ -122,7 +125,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                     ),
                     const SizedBox(height: 15),
                     MyButton(
-                      onTab: sendPasswordResetEmail,
+                      onTab: () => sendPasswordResetEmail(context), // Pass context here
                       text: "Magpadala ng link sa E-mail",
                     ),
                     if (isLoading)

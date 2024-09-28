@@ -18,10 +18,11 @@ class TextFieldInputF extends StatefulWidget {
   });
 
   @override
-  _TextFieldInputFState createState() => _TextFieldInputFState();
+  TextFieldInputFState createState() => TextFieldInputFState(); // No underscore here
 }
 
-class _TextFieldInputFState extends State<TextFieldInputF> {
+// Remove the underscore to make it public
+class TextFieldInputFState extends State<TextFieldInputF> {
   bool _isPasswordHidden = true;
 
   @override

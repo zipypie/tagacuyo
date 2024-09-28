@@ -3,15 +3,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:taga_cuyo/src/features/common_widgets/button.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
+import 'package:taga_cuyo/src/features/services/authentication.dart';
+import 'package:taga_cuyo/src/features/services/progress_service.dart';
 
 class LessonQuizScreen extends StatefulWidget {
   final String lessonName;
-  final String documentId; // Added documentId parameter
+  final String documentId;
 
   const LessonQuizScreen({
     super.key,
     required this.lessonName,
-    required this.documentId, // Added documentId to constructor
+    required this.documentId,
   });
 
   @override
@@ -19,18 +21,32 @@ class LessonQuizScreen extends StatefulWidget {
 }
 
 class _LessonQuizScreenState extends State<LessonQuizScreen> {
-  int _currentQuizIndex = 0; // Keep track of the current quiz index
-  List<String> _quizIds = []; // Store quiz document IDs
+  final ProgressService progressService = ProgressService(); // Instantiate progressService here
+  late int completedLessons; // Use late for deferred initialization
+  final AuthService _authService = AuthService();
+  int _currentQuizIndex = 0;
+  List<String> _quizIds = [];
   List<Map<String, dynamic>> _words = [];
   bool _isLoading = true;
   int _currentWordIndex = 0;
   final TextEditingController _translationController = TextEditingController();
-  Set<String> selectedOptions = {}; // Track selected options
+  Set<String> selectedOptions = {};
 
   @override
   void initState() {
     super.initState();
     _fetchWords();
+    _initializeCompletedLessons(); // Initialize completed lessons
+  }
+
+  Future<void> _initializeCompletedLessons() async {
+    String? userId = _authService.getUserId(); // Ensure you get the user ID
+    if (userId != null) {
+      completedLessons = await progressService.getCompletedLessons(userId);
+      print('Completed Lessons: $completedLessons');
+    } else {
+      print('User ID is null.');
+    }
   }
 
   @override
@@ -39,84 +55,130 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
     super.dispose();
   }
 
- Future<void> _fetchWords() async {
+  Future<void> _updateLessonProgress() async {
   try {
-    print('Fetching words for lesson: ${widget.lessonName}');
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('lessons')
-        .where('lesson_name', isEqualTo: widget.lessonName)
-        .get();
+    String? userId = _authService.getUserId();
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User is not logged in.')),
+      );
+      return;
+    }
 
-    if (querySnapshot.docs.isNotEmpty) {
-      final lessonDoc = querySnapshot.docs[0];
-      print('Lesson found: ${lessonDoc.id}');
+    DocumentReference userProgressDocRef = FirebaseFirestore.instance
+        .collection('user_progress')
+        .doc(userId);
 
-      final wordsSnapshot =
-          await lessonDoc.reference.collection('words').get();
-      if (wordsSnapshot.docs.isNotEmpty) {
-        List<Map<String, dynamic>> words = [];
-        _quizIds = querySnapshot.docs.map((doc) => doc.id).toList();
-        for (var doc in wordsSnapshot.docs) {
-          final data = doc.data();
-          print('Raw word document data: $data'); // Print raw data to debug
+    DocumentSnapshot userProgressDoc = await userProgressDocRef.get();
 
-          // Retrieve options
-          List<String> options = List<String>.from(data['options'] ?? []);
-          print('Retrieved options: $options'); // Log retrieved options
+    bool isCompleted = (userProgressDoc.data() as Map<String, dynamic>?)?['lessons_progress']?[widget.documentId]?['isCompleted'] ?? false;
 
-          // Shuffle options
-          options.shuffle(); // Shuffle the options
+    if (isCompleted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You have already completed this lesson.')),
+      );
+      return;
+    }
 
-          words.add({
-            'word': data['word'],
-            'translated': data['translated'],
-            'options': options,
+    // Proceed to update only if not completed
+    print('Updating user progress for lesson ID: ${widget.documentId}');
+    await userProgressDocRef.set({
+      'lessons': FieldValue.increment(1),
+      'lessons_progress': {
+        widget.documentId: {
+          'isCompleted': true, // Set to true after completing the lesson
+        },
+      },
+    }, SetOptions(merge: true));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Lesson progress updated!')),
+    );
+  } catch (e) {
+    print('Error updating lesson progress: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error updating lesson progress: $e')),
+    );
+  }
+}
+
+
+  Future<void> _fetchWords() async {
+    try {
+      print('Fetching words for lesson: ${widget.lessonName}');
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('lessons')
+          .where('lesson_name', isEqualTo: widget.lessonName)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final lessonDoc = querySnapshot.docs[0];
+        print('Lesson found: ${lessonDoc.id}');
+
+        final wordsSnapshot =
+            await lessonDoc.reference.collection('words').get();
+        if (wordsSnapshot.docs.isNotEmpty) {
+          List<Map<String, dynamic>> words = [];
+          _quizIds = querySnapshot.docs.map((doc) => doc.id).toList();
+          for (var doc in wordsSnapshot.docs) {
+            final data = doc.data();
+            print('Raw word document data: $data'); // Print raw data to debug
+
+            // Retrieve options
+            List<String> options = List<String>.from(data['options'] ?? []);
+            print('Retrieved options: $options'); // Log retrieved options
+
+            // Shuffle options
+            options.shuffle(); // Shuffle the options
+
+            words.add({
+              'word': data['word'],
+              'translated': data['translated'],
+              'options': options,
+            });
+          }
+
+          setState(() {
+            _words = words;
+            _isLoading = false;
+          });
+
+          print('Final fetched words: $_words');
+        } else {
+          print('No words found for lesson ${widget.lessonName}');
+          setState(() {
+            _words = [];
+            _isLoading = false;
           });
         }
-
-        setState(() {
-          _words = words;
-          _isLoading = false;
-        });
-
-        print('Final fetched words: $_words');
       } else {
-        print('No words found for lesson ${widget.lessonName}');
+        print('No lesson found with name ${widget.lessonName}');
         setState(() {
           _words = [];
           _isLoading = false;
         });
       }
-    } else {
-      print('No lesson found with name ${widget.lessonName}');
+    } catch (e) {
+      print('Error fetching words: $e');
       setState(() {
-        _words = [];
         _isLoading = false;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching words: $e')),
+      );
     }
-  } catch (e) {
-    print('Error fetching words: $e');
-    setState(() {
-      _isLoading = false;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error fetching words: $e')),
-    );
   }
-}
-  void _checkAnswer() {
+
+  Future<void> _checkAnswer() async {
     if (_words.isNotEmpty && _currentWordIndex < _words.length) {
-      // Join selected options into a single string and normalize spaces
       String selectedAnswer = selectedOptions
           .join(' ')
-          .replaceAll(RegExp(r'\s+'),
-              ' ') // Replace multiple spaces with a single space
+          .replaceAll(RegExp(r'\s+'), ' ')
           .trim()
-          .toLowerCase(); // Normalize case
+          .toLowerCase();
 
-      String expectedTranslation = _words[_currentWordIndex]['translated']
-          .trim()
-          .toLowerCase(); // Normalize case
+      String expectedTranslation =
+          _words[_currentWordIndex]['translated'].trim().toLowerCase();
 
       if (expectedTranslation == selectedAnswer) {
         if (_currentWordIndex < _words.length - 1) {
@@ -127,26 +189,23 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
           });
         } else {
           if (_currentQuizIndex < _quizIds.length - 1) {
-            // Load the next quiz
             _loadNextQuiz();
           } else {
-            // Show dialog for completion of all quizzes
+            // Update lesson progress when the last quiz is completed
+            await _updateLessonProgress(); // Call the update method here
             _showCompletionDialog();
           }
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Quiz completed!')),
-          );
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('Quiz completed!')));
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Incorrect answer! Try again.')),
-        );
+            const SnackBar(content: Text('Incorrect answer! Try again.')));
       }
     }
   }
 
-
-void _loadNextQuiz() async {
+  void _loadNextQuiz() async {
     setState(() {
       _currentQuizIndex++;
       _currentWordIndex = 0; // Reset word index for new quiz
@@ -168,7 +227,8 @@ void _loadNextQuiz() async {
               child: const Text('OK'),
               onPressed: () {
                 Navigator.of(context).pop();
-                Navigator.pop(context); // Optionally navigate back to previous screen
+                Navigator.pop(
+                    context); // Optionally navigate back to previous screen
               },
             ),
           ],
@@ -176,6 +236,7 @@ void _loadNextQuiz() async {
       },
     );
   }
+
   void _toggleOption(String option) {
     setState(() {
       if (selectedOptions.contains(option)) {
