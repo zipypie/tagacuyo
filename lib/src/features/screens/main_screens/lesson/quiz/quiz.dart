@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:taga_cuyo/src/features/common_widgets/button.dart';
+import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
 
 class LessonQuizScreen extends StatefulWidget {
@@ -8,10 +9,10 @@ class LessonQuizScreen extends StatefulWidget {
   final String documentId; // Added documentId parameter
 
   const LessonQuizScreen({
-    Key? key,
+    super.key,
     required this.lessonName,
     required this.documentId, // Added documentId to constructor
-  }) : super(key: key);
+  });
 
   @override
   _LessonQuizScreenState createState() => _LessonQuizScreenState();
@@ -99,29 +100,40 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
     }
   }
 
-  void _checkAnswer() {
-    if (_words.isNotEmpty && _currentWordIndex < _words.length) {
-      String selectedAnswer =
-          selectedOptions.join(', '); // Join selected options for checking
-      if (_words[_currentWordIndex]['translated'] == selectedAnswer) {
-        if (_currentWordIndex < _words.length - 1) {
-          setState(() {
-            _currentWordIndex++;
-            selectedOptions.clear(); // Clear selections for the next word
-            _updateTextField(); // Update text field to reflect changes
-          });
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Quiz completed!')),
-          );
-        }
+void _checkAnswer() {
+  if (_words.isNotEmpty && _currentWordIndex < _words.length) {
+    // Join selected options into a single string and normalize spaces
+    String selectedAnswer = selectedOptions.join(' ')
+        .replaceAll(RegExp(r'\s+'), ' ') // Replace multiple spaces with a single space
+        .trim()
+        .toLowerCase(); // Normalize case
+
+    String expectedTranslation = _words[_currentWordIndex]['translated']
+        .trim()
+        .toLowerCase(); // Normalize case
+  
+
+    if (expectedTranslation == selectedAnswer) {
+      if (_currentWordIndex < _words.length - 1) {
+        setState(() {
+          _currentWordIndex++;
+          selectedOptions.clear();
+          _updateTextField();
+        });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Incorrect answer! Try again.')),
+          const SnackBar(content: Text('Quiz completed!')),
         );
       }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Incorrect answer! Try again.')),
+      );
     }
   }
+}
+
+
 
   void _toggleOption(String option) {
     setState(() {
@@ -136,7 +148,7 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
 
   void _updateTextField() {
     _translationController.text =
-        selectedOptions.join(', '); // Join selected options with a comma
+        selectedOptions.join(' '); // Join selected options with a comma
   }
 
   @override
@@ -154,16 +166,18 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
                   child: Column(
                     children: [
                       Text(
+                        textAlign: TextAlign.center,
                         '${widget.documentId}:',
                         style: const TextStyle(
-                            fontSize: 20,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Color.fromARGB(255, 97, 97, 97)),
                       ),
                       Text(
-                        '${widget.lessonName}',
+                        textAlign: TextAlign.center,
+                        widget.lessonName,
                         style: const TextStyle(
-                            fontSize: 24,
+                            fontSize: 21,
                             fontWeight: FontWeight.bold,
                             color: Colors.black),
                       ),
@@ -178,16 +192,14 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
                       Alignment.centerLeft, // Aligns the text to the left
                   child: Text(
                     'Isalin ang pangungusap na ito',
-                    style:
-                        TextStyle(fontFamily: AppFonts.kanitLight, fontSize: 18),
+                    style: TextStyle(
+                        fontFamily: AppFonts.kanitLight, fontSize: 18),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
               _buildQuestionContainer(),
-              const SizedBox(height: 16),
               _buildTranslationTextField(),
-              const SizedBox(height: 16),
               _buildOptions(),
               const Spacer(),
               MyButton(
@@ -207,12 +219,29 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
           ),
           Positioned(
             top: 40, // Adjust this value to position vertically
-            right: 40, // Adjust this value to position horizontally
-            child: IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () {
-                Navigator.pop(context);
-              },
+            right: 30, // Adjust this value to position horizontally
+            child: Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                borderRadius:
+                    BorderRadius.circular(50), // Circular border for the icon
+                border: Border.all(
+                  width: 1,
+                  color: Colors.black, // Optional: Add a color to the border
+                ),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.close),
+                padding: EdgeInsets
+                    .zero, // Remove padding to fit the icon inside the border
+                alignment:
+                    Alignment.center, // Center the icon inside the container
+                iconSize: 20, // Adjust icon size if needed
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
             ),
           ),
         ],
@@ -222,7 +251,8 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
 
   Widget _buildQuestionContainer() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      height: MediaQuery.of(context).size.width / 2.5,
+      padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
         color: Colors.lightBlue[50],
         borderRadius: BorderRadius.circular(8),
@@ -236,25 +266,36 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
             width: 100,
           ),
           const SizedBox(width: 16),
-          Expanded(
-            child: _isLoading
-                ? const Text('Loading...', style: TextStyle(fontSize: 16))
-                : _words.isNotEmpty && _currentWordIndex < _words.length
-                    ? Text(
-                        _words[_currentWordIndex]['word'],
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+          Container(
+            color: AppColors.secondaryBackground,
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width / 2,
+              height: MediaQuery.of(context).size.width / 4,
+              child: Center(
+                // Use Center to center the content vertically and horizontally
+                child: _isLoading
+                    ? const Text(
+                        'Loading...',
+                        style: TextStyle(fontSize: 16),
                       )
-                    : const Text(
-                        'No words available for this lesson.',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red,
-                        ),
-                      ),
+                    : _words.isNotEmpty && _currentWordIndex < _words.length
+                        ? Text(
+                            _words[_currentWordIndex]['word'],
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : const Text(
+                            'Hindi matagpuan ang salita',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red,
+                            ),
+                          ),
+              ),
+            ),
           ),
         ],
       ),
@@ -262,24 +303,52 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
   }
 
   Widget _buildTranslationTextField() {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedOptions
-              .clear(); // Clear selected options when text field is tapped
-          _translationController.clear(); // Clear the text field
-        });
-      },
-      child: TextField(
-        controller: _translationController,
-        readOnly: true, // Set to true to make it read-only
-        maxLines: 4,
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(width: 1.0, color: Colors.black),
+    return Padding(
+      padding: const EdgeInsets.all(28.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Text(
+            'i-click ang text sa pagpipilian upang alisin',
+            style: TextStyle(
+              fontFamily: AppFonts.kanitLight,
+              fontSize: 14,
+              fontStyle: FontStyle.italic, // Correct way to italicize text
+            ),
           ),
-        ),
+          const SizedBox(
+              height: 10), // Add some spacing between the text and text field
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedOptions
+                    .clear(); // Clear selected options when text field is tapped
+                _translationController.clear(); // Clear the text field
+              });
+            },
+            child: Container(
+              height: 120, // Same height as the TextField
+              alignment: Alignment.center, // Center the text horizontally
+              decoration: BoxDecoration(
+                border:
+                    Border.all(width: 1.0, color: Colors.black), // Same border
+                borderRadius: BorderRadius.circular(
+                    4.0), // Similar border radius as OutlineInputBorder
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 20.0), // Same vertical padding
+                child: Text(
+                  _translationController
+                      .text, // Display the same text from the controller
+                  textAlign: TextAlign.center, // Center the text horizontally
+                  style: const TextStyle(
+                      fontSize: 16.0), // Add text styling as needed
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -329,7 +398,7 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
                   }).toList(),
                 ),
               )
-            : const Text('No options available',
+            : const Text('Hindi available ang pagpipilian',
                 style: TextStyle(fontSize: 16)),
       ],
     );

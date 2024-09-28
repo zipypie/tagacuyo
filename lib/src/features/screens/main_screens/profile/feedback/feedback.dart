@@ -186,7 +186,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       };
 
       // Send the data to Firestore (assuming you have a 'feedback' collection)
-      await _firestore.collection('tugon').add(feedbackData);
+      await _firestore.collection('feedback').add(feedbackData);
 
       // Optionally show a confirmation message or redirect the user
       ScaffoldMessenger.of(context).showSnackBar(

@@ -113,7 +113,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
             SizedBox(
               child: CustomImage(
                 src: 'assets/images/monkey.png',
-                width: 100, // Fixed width for the image
+                width: 100  , // Fixed width for the image
                 height: 100,
               ),
             ),
@@ -125,6 +125,8 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
 
   // Lesson List Item with Navigation
   Widget _lessonListItem(BuildContext context, Map<String, dynamic> lesson) {
+    double containerWidth = MediaQuery.of(context).size.width / 2 - 40;
+
     return GestureDetector(
       onTap: () {
         // Navigate to quiz screen with the lesson data
@@ -139,7 +141,8 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
         );
       },
       child: Container(
-        width: MediaQuery.of(context).size.width / 2 - 40, // Calculate half width minus margin
+        width: containerWidth,
+        height: containerWidth, // Calculate half width minus margin
         margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 6), // Space between items
         decoration: BoxDecoration(
           color: AppColors.secondaryBackground,
@@ -165,8 +168,8 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
               ),
               const CustomImage(
                 src: 'assets/images/monkey.png',
-                width: 100,
-                height: 100,
+                width: 70,
+                height: 70,
               ),
               Text(
                 lesson['lesson_name'] ?? 'Unknown Lesson', // Display lesson name safely
