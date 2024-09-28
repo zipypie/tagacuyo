@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:taga_cuyo/src/features/common_widgets/appbar.dart';
 import 'package:taga_cuyo/src/features/common_widgets/bottom_navigation.dart';

@@ -19,6 +19,8 @@ class LessonQuizScreen extends StatefulWidget {
 }
 
 class _LessonQuizScreenState extends State<LessonQuizScreen> {
+  int _currentQuizIndex = 0; // Keep track of the current quiz index
+  List<String> _quizIds = []; // Store quiz document IDs
   List<Map<String, dynamic>> _words = [];
   bool _isLoading = true;
   int _currentWordIndex = 0;
@@ -37,104 +39,143 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
     super.dispose();
   }
 
-  Future<void> _fetchWords() async {
-    try {
-      print('Fetching words for lesson: ${widget.lessonName}');
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('lessons')
-          .where('lesson_name', isEqualTo: widget.lessonName)
-          .get();
+ Future<void> _fetchWords() async {
+  try {
+    print('Fetching words for lesson: ${widget.lessonName}');
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('lessons')
+        .where('lesson_name', isEqualTo: widget.lessonName)
+        .get();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        final lessonDoc = querySnapshot.docs[0];
-        print('Lesson found: ${lessonDoc.id}');
+    if (querySnapshot.docs.isNotEmpty) {
+      final lessonDoc = querySnapshot.docs[0];
+      print('Lesson found: ${lessonDoc.id}');
 
-        final wordsSnapshot =
-            await lessonDoc.reference.collection('words').get();
-        if (wordsSnapshot.docs.isNotEmpty) {
-          List<Map<String, dynamic>> words = [];
+      final wordsSnapshot =
+          await lessonDoc.reference.collection('words').get();
+      if (wordsSnapshot.docs.isNotEmpty) {
+        List<Map<String, dynamic>> words = [];
+        _quizIds = querySnapshot.docs.map((doc) => doc.id).toList();
+        for (var doc in wordsSnapshot.docs) {
+          final data = doc.data();
+          print('Raw word document data: $data'); // Print raw data to debug
 
-          for (var doc in wordsSnapshot.docs) {
-            final data = doc.data();
-            print('Raw word document data: $data'); // Print raw data to debug
+          // Retrieve options
+          List<String> options = List<String>.from(data['options'] ?? []);
+          print('Retrieved options: $options'); // Log retrieved options
 
-            // Use this line to retrieve options with debug logging
-            List<String> options = List<String>.from(data['options'] ?? []);
-            print('Retrieved options: $options'); // Log retrieved options
+          // Shuffle options
+          options.shuffle(); // Shuffle the options
 
-            words.add({
-              'word': data['word'],
-              'translated': data['translated'],
-              'options': options,
-            });
-          }
-
-          setState(() {
-            _words = words;
-            _isLoading = false;
-          });
-
-          print('Final fetched words: $_words');
-        } else {
-          print('No words found for lesson ${widget.lessonName}');
-          setState(() {
-            _words = [];
-            _isLoading = false;
+          words.add({
+            'word': data['word'],
+            'translated': data['translated'],
+            'options': options,
           });
         }
+
+        setState(() {
+          _words = words;
+          _isLoading = false;
+        });
+
+        print('Final fetched words: $_words');
       } else {
-        print('No lesson found with name ${widget.lessonName}');
+        print('No words found for lesson ${widget.lessonName}');
         setState(() {
           _words = [];
           _isLoading = false;
         });
       }
-    } catch (e) {
-      print('Error fetching words: $e');
+    } else {
+      print('No lesson found with name ${widget.lessonName}');
       setState(() {
+        _words = [];
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching words: $e')),
-      );
     }
-  }
-
-void _checkAnswer() {
-  if (_words.isNotEmpty && _currentWordIndex < _words.length) {
-    // Join selected options into a single string and normalize spaces
-    String selectedAnswer = selectedOptions.join(' ')
-        .replaceAll(RegExp(r'\s+'), ' ') // Replace multiple spaces with a single space
-        .trim()
-        .toLowerCase(); // Normalize case
-
-    String expectedTranslation = _words[_currentWordIndex]['translated']
-        .trim()
-        .toLowerCase(); // Normalize case
-  
-
-    if (expectedTranslation == selectedAnswer) {
-      if (_currentWordIndex < _words.length - 1) {
-        setState(() {
-          _currentWordIndex++;
-          selectedOptions.clear();
-          _updateTextField();
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Quiz completed!')),
-        );
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Incorrect answer! Try again.')),
-      );
-    }
+  } catch (e) {
+    print('Error fetching words: $e');
+    setState(() {
+      _isLoading = false;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error fetching words: $e')),
+    );
   }
 }
+  void _checkAnswer() {
+    if (_words.isNotEmpty && _currentWordIndex < _words.length) {
+      // Join selected options into a single string and normalize spaces
+      String selectedAnswer = selectedOptions
+          .join(' ')
+          .replaceAll(RegExp(r'\s+'),
+              ' ') // Replace multiple spaces with a single space
+          .trim()
+          .toLowerCase(); // Normalize case
+
+      String expectedTranslation = _words[_currentWordIndex]['translated']
+          .trim()
+          .toLowerCase(); // Normalize case
+
+      if (expectedTranslation == selectedAnswer) {
+        if (_currentWordIndex < _words.length - 1) {
+          setState(() {
+            _currentWordIndex++;
+            selectedOptions.clear();
+            _updateTextField();
+          });
+        } else {
+          if (_currentQuizIndex < _quizIds.length - 1) {
+            // Load the next quiz
+            _loadNextQuiz();
+          } else {
+            // Show dialog for completion of all quizzes
+            _showCompletionDialog();
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Quiz completed!')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Incorrect answer! Try again.')),
+        );
+      }
+    }
+  }
 
 
+void _loadNextQuiz() async {
+    setState(() {
+      _currentQuizIndex++;
+      _currentWordIndex = 0; // Reset word index for new quiz
+      selectedOptions.clear();
+      _translationController.clear(); // Clear the text field
+      _fetchWords(); // Fetch words for the new quiz
+    });
+  }
 
+  void _showCompletionDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Congratulations!'),
+          content: const Text('You have successfully completed the aralin.'),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.pop(context); // Optionally navigate back to previous screen
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
   void _toggleOption(String option) {
     setState(() {
       if (selectedOptions.contains(option)) {
@@ -254,7 +295,7 @@ void _checkAnswer() {
       height: MediaQuery.of(context).size.width / 2.5,
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
-        color: Colors.lightBlue[50],
+        color: Colors.lightBlue[100],
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -262,17 +303,19 @@ void _checkAnswer() {
         children: [
           Image.asset(
             'assets/images/monkey.png',
-            height: 100,
-            width: 100,
+            height: 120,
+            width: 120,
           ),
           const SizedBox(width: 16),
           Container(
-            color: AppColors.secondaryBackground,
+            decoration: BoxDecoration(
+              color: AppColors.primaryBackground,
+              borderRadius: BorderRadius.circular(25), // Moved to Container
+            ),
             child: SizedBox(
               width: MediaQuery.of(context).size.width / 2,
               height: MediaQuery.of(context).size.width / 4,
               child: Center(
-                // Use Center to center the content vertically and horizontally
                 child: _isLoading
                     ? const Text(
                         'Loading...',
@@ -282,9 +325,9 @@ void _checkAnswer() {
                         ? Text(
                             _words[_currentWordIndex]['word'],
                             style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                                fontSize: 16,
+                                fontFamily: AppFonts.kanitLight,
+                                fontWeight: FontWeight.w900),
                           )
                         : const Text(
                             'Hindi matagpuan ang salita',
@@ -360,47 +403,50 @@ void _checkAnswer() {
 
     final options = _words[_currentWordIndex]['options'] ?? [];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const Text(
-          'Pagpipilian',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        options.isNotEmpty
-            ? Center(
-                child: Wrap(
-                  spacing: 8.0,
-                  runSpacing: 4.0,
-                  alignment: WrapAlignment.center,
-                  children: options.map<Widget>((option) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 4.0),
-                      child: GestureDetector(
-                        onTap: () => _toggleOption(option),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: selectedOptions.contains(option)
-                                ? Colors.lightBlue[100]
-                                : Colors.grey[300],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            option, // Display each option here
-                            style: const TextStyle(fontSize: 16),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 50),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Text(
+            'Pagpipilian',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          options.isNotEmpty
+              ? Center(
+                  child: Wrap(
+                    spacing: 8.0,
+                    runSpacing: 4.0,
+                    alignment: WrapAlignment.center,
+                    children: options.map<Widget>((option) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 4.0),
+                        child: GestureDetector(
+                          onTap: () => _toggleOption(option),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: selectedOptions.contains(option)
+                                  ? Colors.lightBlue[100]
+                                  : AppColors.primary,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Text(
+                              option, // Display each option here
+                              style: const TextStyle(fontSize: 16),
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              )
-            : const Text('Hindi available ang pagpipilian',
-                style: TextStyle(fontSize: 16)),
-      ],
+                      );
+                    }).toList(),
+                  ),
+                )
+              : const Text('Hindi available ang pagpipilian',
+                  style: TextStyle(fontSize: 16)),
+        ],
+      ),
     );
   }
 }
