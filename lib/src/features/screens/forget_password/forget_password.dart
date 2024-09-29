@@ -7,7 +7,6 @@ import 'package:taga_cuyo/src/features/common_widgets/text_input.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:taga_cuyo/src/features/constants/images.dart';
 import 'package:taga_cuyo/src/features/constants/logo.dart';
 import 'package:taga_cuyo/src/features/screens/login/login.dart';
 

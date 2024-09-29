@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:taga_cuyo/src/features/common_widgets/appbar.dart';
 import 'package:taga_cuyo/src/features/common_widgets/bottom_navigation.dart';
+import 'package:taga_cuyo/src/features/screens/main_screens/category/category.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/home/explore_page.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/lesson/lesson_screen.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/profile_screen.dart';
@@ -28,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static final List<Widget> _widgetOptions = <Widget>[
     const ExplorePage(),
     const LessonScreenPage(),
-    const Text('Category Page'),
+    const CategoryScreen(),
     TranslatorScreen(),
   ];
 

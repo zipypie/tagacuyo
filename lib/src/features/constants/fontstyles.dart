@@ -9,6 +9,8 @@ class AppFonts {
   static const String roboto = 'Roboto-Regular';  // Must match the family name in pubspec.yaml
   static const String feb = 'FEB';
   static const String fer = 'FER';
+  static const String fcb = 'FCB';
+  static const String fcr = 'FCR';
 
 }
 

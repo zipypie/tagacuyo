@@ -21,8 +21,8 @@ class LessonQuizScreen extends StatefulWidget {
 }
 
 class _LessonQuizScreenState extends State<LessonQuizScreen> {
-  final ProgressService progressService = ProgressService(); // Instantiate progressService here
-  late int completedLessons; // Use late for deferred initialization
+  final LessonProgressService _progressService = LessonProgressService();
+  late int completedLessons = 0; // Default value of 0
   final AuthService _authService = AuthService();
   int _currentQuizIndex = 0;
   List<String> _quizIds = [];
@@ -36,13 +36,13 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
   void initState() {
     super.initState();
     _fetchWords();
-    _initializeCompletedLessons(); // Initialize completed lessons
+    _initializeCompletedLessons();
   }
 
   Future<void> _initializeCompletedLessons() async {
-    String? userId = _authService.getUserId(); // Ensure you get the user ID
+    String? userId = _authService.getUserId();
     if (userId != null) {
-      completedLessons = await progressService.getCompletedLessons(userId);
+      completedLessons = await _progressService.getCompletedLessons(userId); // Use correct service instance
       print('Completed Lessons: $completedLessons');
     } else {
       print('User ID is null.');
@@ -54,6 +54,7 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
     _translationController.dispose();
     super.dispose();
   }
+
 
   Future<void> _updateLessonProgress() async {
   try {
@@ -465,7 +466,7 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
     final options = _words[_currentWordIndex]['options'] ?? [];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 50),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
