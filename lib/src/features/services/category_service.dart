@@ -16,4 +16,12 @@ class CategoryProgressService {
       return 0; 
     }
   }
+
+  Future<void> incrementCompletedCategories(String userId) async {
+    DocumentReference userCategoryProgressDoc = _firestore.collection('userCategoryProgress').doc(userId);
+
+    await userCategoryProgressDoc.set({
+      'completedCategories': FieldValue.increment(1),
+    }, SetOptions(merge: true)); // Use merge to update the document without overwriting existing data
+  }
 }

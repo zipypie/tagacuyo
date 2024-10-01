@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/account/change_password_page.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/feedback/feedback.dart';
