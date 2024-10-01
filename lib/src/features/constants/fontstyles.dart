@@ -27,14 +27,14 @@ class TextStyles {
 
   // Subtitle style
   static const TextStyle learningtitle = TextStyle(
-    fontFamily: AppFonts.feb,
+    fontFamily: AppFonts.fcb,
     fontSize: 20,
     fontWeight: FontWeight.w900,
     color: Color.fromARGB(255, 60, 63, 65),
   );
       static const TextStyle learningsubtitle = TextStyle(
-    fontFamily: AppFonts.fer,
-    fontSize: 12,
+    fontFamily: AppFonts.fcr,
+    fontSize: 14,
     color: Color.fromARGB(255, 0, 0, 0), // Light grey color for captions or secondary info
   );
 

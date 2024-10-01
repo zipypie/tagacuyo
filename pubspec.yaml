@@ -71,10 +71,10 @@ flutter:
         - asset:  assets/fonts/Fredoka_Expanded-Regular.ttf
     - family: FCB
       fonts: 
-        - asset:  assets/fonts/Fredoka_SemiCondensed-Bold.ttf
+        - asset:  assets/fonts/Fredoka_Condensed-Bold.ttf
     - family: FEB
       fonts: 
         - asset:  assets/fonts/Fredoka_Expanded-Bold.ttf
     - family: FCR
       fonts: 
-        - asset:  assets/fonts/Fredoka_SemiCondensed-Regular.ttf
+        - asset:  assets/fonts/Fredoka_Condensed-Regular.ttf

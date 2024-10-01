@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/account/change_password_page.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/feedback/feedback.dart';
@@ -7,113 +8,111 @@ import 'package:taga_cuyo/src/features/screens/main_screens/profile/logout/logou
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/profile_bloc.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/profile_event.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/profile_state.dart';
-import 'package:taga_cuyo/src/features/services/user_service.dart'; // Ensure to import UserService
 
 class ProfileScreen extends StatelessWidget {
-  final String uid;
+  final String? uid;
 
   const ProfileScreen({super.key, required this.uid});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ProfileBloc(
-        RepositoryProvider.of<UserService>(context),
-      )..add(FetchUserProfile(uid)),
-      child: Scaffold(
-        body: BlocBuilder<ProfileBloc, ProfileState>(
-          builder: (context, state) {
-            if (state is ProfileLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is ProfileLoaded) {
-              return SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeader(state.name, state.dateJoined),
-                    const SizedBox(height: 20),
-                    _buildProgressSection(
-                      context,
-                      lessonsProgress: state.lessonsProgress,
-                      categoriesProgress: state.categoriesProgress,
-                      minutesProgress: state.minutesProgress,
-                      daysProgress: state.daysProgress,
-                      streakProgress: state.streakProgress,
-                    ),
-                    const SizedBox(height: 20),
-                    _buildProfileOptions(context),
-                  ],
-                ),
-              );
-            } else if (state is ProfileError) {
-              return Center(child: Text(state.message));
-            } else {
-              return const Center(child: Text('Unknown state'));
-            }
-          },
-        ),
+    final profileBloc = BlocProvider.of<ProfileBloc>(context);
+
+    // Fetch user profile if not loaded
+    if (profileBloc.state is! ProfileLoaded) {
+      profileBloc.add(FetchUserProfile(uid!));
+    }
+
+    return Scaffold(
+      body: BlocBuilder<ProfileBloc, ProfileState>(
+        builder: (context, state) {
+          if (state is ProfileLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is ProfileLoaded) {
+            return SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(state.name, state.dateJoined),
+                  const SizedBox(height: 20),
+                  _buildProgressSection(
+                    context,
+                    lessonsProgress: state.lessonsProgress,
+                    categoriesProgress: state.categoriesProgress,
+                    minutesProgress: state.minutesProgress,
+                    daysProgress: state.daysProgress,
+                    streakProgress: state.streakProgress,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildProfileOptions(context),
+                ],
+              ),
+            );
+          } else if (state is ProfileError) {
+            return Center(child: Text(state.message));
+          } else {
+            return const Center(child: Text('Unknown state'));
+          }
+        },
       ),
     );
   }
 
-// Header Section
-Widget _buildHeader(String name, String dateJoined) {
-  return Container(
-    height: 100,
-    decoration: BoxDecoration(
-      color: Colors.lightBlue[100],
-    ),
-    child: Padding(
-      padding: const EdgeInsets.only(left: 20.0), // Add left padding
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 70, // Width of the circular background
-            height: 70, // Height of the circular background
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color.fromARGB(255, 21, 195, 254), // Background color of the circle
-            ),
-            child: const Center(
-              child: Icon(
-                Icons.person, // You can change this icon if you prefer a different one
-                size: 40, // Adjust the size of the icon
-                color: AppColors.titleColor, // Change the color if needed
+  // Header Section
+  Widget _buildHeader(String name, String dateJoined) {
+    return Container(
+      height: 100,
+      decoration: BoxDecoration(
+        color: Colors.lightBlue[100],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 20.0),
+        child: Row(
+          children: [
+            Container(
+              width: 70,
+              height: 70,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color.fromARGB(255, 21, 195, 254),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.person,
+                  size: 40,
+                  color: AppColors.titleColor,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 10), // Space between the icon and text
-          Expanded( // Use Expanded to allow text to take remaining space
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.titleColor,
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.titleColor,
+                    ),
                   ),
-                ),
-                Text(
-                  'Joined: $dateJoined',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
+                  Text(
+                    'Joined: $dateJoined',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   // Progress Section
   Widget _buildProgressSection(BuildContext context,
@@ -122,7 +121,7 @@ Widget _buildHeader(String name, String dateJoined) {
       required int minutesProgress,
       required int daysProgress,
       required int streakProgress}) {
-    final halfScreenWidth = (MediaQuery.of(context).size.width * 0.4).toDouble();
+    final halfScreenWidth = MediaQuery.of(context).size.width * 0.4;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 5),
