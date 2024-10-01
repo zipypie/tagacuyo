@@ -8,12 +8,14 @@ import 'package:taga_cuyo/src/features/screens/main_screens/category/category_qu
 import 'package:taga_cuyo/src/features/services/authentication.dart';
 
 class Category {
+  final String id;
   final String title;
   final String imagePath;
   final String number;
   final List<String> subcategoryTitles;
 
   Category({
+    required this.id,
     required this.title,
     required this.imagePath,
     required this.number,
@@ -30,18 +32,26 @@ class CategoryScreen extends StatefulWidget {
 
 class _CategoryScreenState extends State<CategoryScreen> {
   List<Category> categories = [];
-  final AuthService _authService = AuthService(); // Create an instance of AuthService
-  String? userId; // Variable to hold the user ID
+  final AuthService _authService = AuthService();
+  String? userId;
+
   @override
   void initState() {
     super.initState();
+    fetchCurrentUserId();
     fetchCategories();
+  }
+
+  Future<void> fetchCurrentUserId() async {
+    userId = _authService.getUserId();
+    if (userId == null) {
+      print("User is not logged in");
+    }
   }
 
   Future<void> fetchCategories() async {
     try {
-      CollectionReference collection =
-          FirebaseFirestore.instance.collection('categories');
+      CollectionReference collection = FirebaseFirestore.instance.collection('categories');
       QuerySnapshot querySnapshot = await collection.get();
 
       List<Category> fetchedCategories = [];
@@ -51,8 +61,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
         fetchedCategories.add(
           Category(
+            id: doc.id,
             title: doc.id,
-            imagePath: '', // Placeholder for image path
+            imagePath: '',
             number: '0/${subcategoryTitles.length}',
             subcategoryTitles: subcategoryTitles,
           ),
@@ -133,60 +144,58 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
-Widget _categorySubcollection(Category category) {
-  return Column(
-    children: [
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            ...category.subcategoryTitles.map((title) {
-              return FutureBuilder<Map<String, dynamic>>(
-                future: fetchSubcategoryData(category.title, title),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Image.asset('assets/images/monkey.png');
-                  } else {
-                    String imagePath = snapshot.data?['image_path'] ?? '';
-                    return FutureBuilder<String>(
-                      future: fetchImageFromStorage(imagePath),
-                      builder: (context, imageSnapshot) {
-                        if (imageSnapshot.connectionState == ConnectionState.waiting) {
-                          return const CircularProgressIndicator();
-                        } else if (imageSnapshot.hasError) {
-                          return Image.asset('assets/images/monkey.png');
-                        } else {
-                          String imageUrl = imageSnapshot.data ?? 'assets/images/monkey.png';
-                          return _categoryImageWithTitle(imageUrl, title, category); // Pass category object
-                        }
-                      },
-                    );
-                  }
-                },
-              );
-            }),
-          ],
+  Widget _categorySubcollection(Category category) {
+    return Column(
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              ...category.subcategoryTitles.map((title) {
+                return FutureBuilder<Map<String, dynamic>>(
+                  future: fetchSubcategoryData(category.title, title),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Image.asset('assets/images/monkey.png');
+                    } else {
+                      String imagePath = snapshot.data?['image_path'] ?? '';
+                      return FutureBuilder<String>(
+                        future: fetchImageFromStorage(imagePath),
+                        builder: (context, imageSnapshot) {
+                          if (imageSnapshot.connectionState == ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          } else if (imageSnapshot.hasError) {
+                            return Image.asset('assets/images/monkey.png');
+                          } else {
+                            String imageUrl = imageSnapshot.data ?? 'assets/images/monkey.png';
+                            return _categoryImageWithTitle(imageUrl, title, category);
+                          }
+                        },
+                      );
+                    }
+                  },
+                );
+              }).toList(),
+            ],
+          ),
         ),
-      ),
-    ],
-  );
-}
+      ],
+    );
+  }
 
-
- Widget _categoryImageWithTitle(
-    String imagePath, String title, Category category) {
+  Widget _categoryImageWithTitle(String imagePath, String title, Category category) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => NextQuizScreen(
-              title: category.title, // Pass the category title
-              subcategoryTitle: title, // Pass the selected subcategory title
-              currentWord: title, // Pass the current word for fetching the next one
-              userId: userId ?? '', // Pass the user ID (default to empty string if null)
+              categoryId: category.id,
+              subcategoryTitle: title,
+              currentWord: title,
+              userId: userId ?? '',
             ),
           ),
         );
@@ -209,15 +218,14 @@ Widget _categorySubcollection(Category category) {
                       imagePath,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        return Image.asset('assets/images/monkey.png',
-                            fit: BoxFit.cover);
+                        return Image.asset('assets/images/monkey.png', fit: BoxFit.cover);
                       },
                     )
                   : Image.asset('assets/images/monkey.png', fit: BoxFit.cover),
             ),
             const SizedBox(height: 5),
             Text(
-              capitalizeFirstLetter(title),
+              title,
               style: const TextStyle(
                 fontFamily: AppFonts.fcr,
                 fontSize: 16,
@@ -230,9 +238,7 @@ Widget _categorySubcollection(Category category) {
     );
   }
 
-
-  Future<Map<String, dynamic>> fetchSubcategoryData(
-      String categoryId, String subcategoryId) async {
+  Future<Map<String, dynamic>> fetchSubcategoryData(String categoryId, String subcategoryId) async {
     try {
       DocumentSnapshot subcategoryDoc = await FirebaseFirestore.instance
           .collection('categories')
