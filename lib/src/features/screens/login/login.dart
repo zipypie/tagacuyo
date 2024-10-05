@@ -10,6 +10,7 @@ import 'package:taga_cuyo/src/features/screens/signup/sign_up.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
 import 'package:taga_cuyo/src/features/services/authentication.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:taga_cuyo/src/features/utils/logger.dart';
 
 
 class SignInScreen extends StatefulWidget {
@@ -30,11 +31,11 @@ class _SignInScreenState extends State<SignInScreen> {
       if (snapshot.exists) {
         return snapshot.data() as Map<String, dynamic>?;
       } else {
-        print("No user data found for UID: $uid");
+        Logger.log("No user data found for UID: $uid");
         return null;
       }
     } catch (e) {
-      print("Error fetching user data: $e");
+      Logger.log("Error fetching user data: $e");
       return null;
     }
   }

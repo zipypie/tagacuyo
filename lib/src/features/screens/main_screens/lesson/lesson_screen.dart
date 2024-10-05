@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:taga_cuyo/src/features/constants/capitalize.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/lesson/quiz/quiz.dart';
 import 'package:taga_cuyo/src/features/services/authentication.dart';
+import 'package:taga_cuyo/src/features/utils/logger.dart';
 import 'lesson_bloc.dart';
 import 'lesson_event.dart';
 import 'lesson_state.dart';
@@ -59,7 +60,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
         });
       } catch (e) {
         // Handle errors (e.g., show a message to the user)
-        print("Error fetching lesson data: $e");
+        Logger.log("Error fetching lesson data: $e");
       }
     }
   }

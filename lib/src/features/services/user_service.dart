@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:taga_cuyo/src/features/utils/logger.dart';
 
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -8,7 +9,7 @@ class UserService {
       DocumentSnapshot document = await _firestore.collection('users').doc(userId).get();
       return document.exists ? document : null;
     } catch (e) {
-      print('Error fetching user by ID: $e');
+      Logger.log('Error fetching user by ID: $e');
       return null;
     }
   }
@@ -16,9 +17,9 @@ class UserService {
   Future<void> updateUserEmail(String userId, String newEmail) async {
     try {
       await _firestore.collection('users').doc(userId).update({'email': newEmail});
-      print('User email updated successfully');
+      Logger.log('User email updated successfully');
     } catch (e) {
-      print('Error updating user email: $e');
+      Logger.log('Error updating user email: $e');
     }
   }
 
@@ -27,7 +28,7 @@ class UserService {
       QuerySnapshot snapshot = await _firestore.collection('users').where('email', isEqualTo: email).get();
       return snapshot.docs;
     } catch (e) {
-      print('Error searching users by email: $e');
+      Logger.log('Error searching users by email: $e');
       return [];
     }
   }

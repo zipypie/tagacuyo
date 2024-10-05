@@ -1,6 +1,9 @@
+//profile_bloc.dart
+
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:taga_cuyo/src/features/services/user_service.dart';
+import 'package:taga_cuyo/src/features/utils/logger.dart';
 import 'profile_event.dart';
 import 'profile_state.dart';
 
@@ -17,7 +20,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   try {
     // Fetch user document
     final userDoc = await userService.getUserById(event.uid);
-    print('User document: ${userDoc?.data()}');
+    Logger.log('User document: ${userDoc?.data()}');
 
     if (userDoc != null && userDoc.exists) {
       String firstName = userDoc['firstname'] ?? '';
@@ -45,7 +48,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           'days': 0,
           'streak': 0,
         });
-        print("Created new progress document for user: ${event.uid}");
+        Logger.log("Created new progress document for user: ${event.uid}");
       }
 
       // Fetch the progress document again after creation

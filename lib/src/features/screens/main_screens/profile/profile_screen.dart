@@ -1,3 +1,5 @@
+//profile_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
@@ -17,8 +19,8 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final profileBloc = BlocProvider.of<ProfileBloc>(context);
 
-    // Fetch user profile if not loaded
-    if (profileBloc.state is! ProfileLoaded) {
+    // Fetch user profile only if state is ProfileLoading or initial state
+    if (profileBloc.state is ProfileLoading || profileBloc.state is ProfileError) {
       profileBloc.add(FetchUserProfile(uid!));
     }
 
@@ -56,6 +58,7 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
+
 
   // Header Section
   Widget _buildHeader(String name, String dateJoined) {
@@ -172,7 +175,7 @@ class ProfileScreen extends StatelessWidget {
               _buildProgressItem(
                 context: context,
                 icon: Image.asset('assets/icons/progress_6.png', width: 30, height: 30),
-                label: 'Streak',
+                label: 'Sunod sunod na araw',
                 value: streakProgress.toString(),
                 maxWidth: halfScreenWidth,
               ),

@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart'; 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:taga_cuyo/src/features/utils/logger.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -32,7 +33,7 @@ class AuthService {
 
   // Reauthenticate user
   Future<void> reauthenticateUser(String password) async {
-    if (currentUser != null) {
+    if (currentUser != null && currentUser!.email != null) {
       AuthCredential credential = EmailAuthProvider.credential(
         email: currentUser!.email!,
         password: password,
@@ -41,10 +42,24 @@ class AuthService {
     }
   }
 
-  // Update user email in Firebase Auth
-  Future<void> updateFirebaseUserEmail(String email) async {
+  // Update user email in Firebase Auth with verification
+  Future<void> updateFirebaseUserEmail(String email, String password) async {
     if (currentUser != null) {
-      await currentUser!.updateEmail(email);
+      try {
+        // Reauthenticate the user before updating the email
+        await reauthenticateUser(password);
+        
+        // Send verification email for new email address
+        await currentUser!.verifyBeforeUpdateEmail(email);
+        
+        // Update the email in Firestore (optional, can be done after verification)
+        await updateUserEmail(email);
+        
+        Logger.log('Verification email sent to $email.');
+      } catch (e) {
+        Logger.log('Failed to update email: ${e.toString()}');
+        rethrow; // Rethrow the exception for further handling
+      }
     }
   }
 
@@ -94,7 +109,7 @@ class AuthService {
 
       res = "Success";
     } catch (e) {
-      print(e.toString());
+      Logger.log(e.toString());
       res = e.toString();
     }
     return res;
@@ -118,7 +133,7 @@ class AuthService {
       res['res'] = "Success";
       res['uid'] = credential.user?.uid; // Save the UID for further use
     } catch (e) {
-      print(e.toString());
+      Logger.log(e.toString());
       res['res'] = e.toString();
     }
     return res;

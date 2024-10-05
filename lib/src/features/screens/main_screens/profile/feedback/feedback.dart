@@ -9,10 +9,10 @@ class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});
 
   @override
-  _FeedbackScreenState createState() => _FeedbackScreenState();
+  FeedbackScreenState createState() => FeedbackScreenState();
 }
 
-class _FeedbackScreenState extends State<FeedbackScreen> {
+class FeedbackScreenState extends State<FeedbackScreen> {
   int _rating = 0;
   List<bool> _selectedOptions = [false, false, false, false];
   final TextEditingController _commentController = TextEditingController();

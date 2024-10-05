@@ -36,6 +36,7 @@ class _FireStoreImageDisplayState extends State<FireStoreImageDisplay> {
       });
     }
   }
+  
 
   @override
   Widget build(BuildContext context) {

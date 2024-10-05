@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:taga_cuyo/src/features/services/authentication.dart';
 import 'lesson_event.dart';
 import 'lesson_state.dart';
 
 class LessonBloc {
+  final AuthService _authService = AuthService(); // Correctly instantiate AuthService
+
   final CollectionReference lessonsCollection = FirebaseFirestore.instance.collection('lessons');
 
   // Stream controllers for managing lesson events and states
@@ -20,44 +23,39 @@ class LessonBloc {
   // Method to handle incoming events
   void _mapEventToState(LessonEvent event) {
     if (event is FetchLessonsEvent) {
-      _fetchLessons();
+      // Fetch userId from the AuthService and pass it to _fetchLessons
+      final userId = _authService.getUserId();
+      if (userId != null) {
+        _fetchLessons(userId);
+      } else {
+        _stateController.add(LessonError('User not authenticated.'));
+      }
     }
   }
 
   // Fetch lessons and emit states
-  Future<void> _fetchLessons() async {
-    _stateController.sink.add(LessonLoading());
+  Future<void> _fetchLessons(String userId) async {
+    _stateController.add(LessonLoading());
 
     try {
-      List<Map<String, dynamic>> lessonsList = [];
-      QuerySnapshot snapshot = await lessonsCollection.get();
-
-      for (var doc in snapshot.docs) {
-        // Use the containsKey utility function to check if the field exists
-        String lessonName = _containsKey(doc, 'lesson_name')
-            ? doc['lesson_name']
-            : 'No name provided'; // Default value if the field is missing
-
-        lessonsList.add({
+      final snapshot = await lessonsCollection.get();
+      final lessonsList = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>? ?? {};
+        return {
           'id': doc.id,
-          'lesson_name': lessonName,
-        });
-      }
+          'lesson_name': data['lesson_name'] ?? 'No name provided', // Default value if missing
+        };
+      }).toList();
 
-      _stateController.sink.add(LessonLoaded(lessonsList));
+      _stateController.add(LessonLoaded(lessonsList, lessonsList.length));
     } catch (error) {
-      _stateController.sink.add(LessonError('Error fetching lessons: $error'));
+      _stateController.add(LessonError('Error fetching lessons: $error'));
     }
-  }
-
-  // Utility method to check if the document contains a specific key
-  bool _containsKey(DocumentSnapshot doc, String key) {
-    return doc.data() != null && (doc.data() as Map<String, dynamic>).containsKey(key);
   }
 
   // Method to add events to the event controller
   void addEvent(LessonEvent event) {
-    _eventController.sink.add(event);
+    _eventController.add(event);
   }
 
   void dispose() {

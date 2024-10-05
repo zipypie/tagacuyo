@@ -6,8 +6,8 @@ class LessonLoading extends LessonState {}
 
 class LessonLoaded extends LessonState {
   final List<Map<String, dynamic>> lessons;
-
-  LessonLoaded(this.lessons);
+  final int maxLength;
+  LessonLoaded(this.lessons, this.maxLength);
 }
 
 class LessonError extends LessonState {

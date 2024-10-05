@@ -4,156 +4,143 @@ import 'package:taga_cuyo/src/features/common_widgets/button.dart';
 import 'package:taga_cuyo/src/features/constants/capitalize.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
-import 'package:taga_cuyo/src/features/services/category_service.dart';
+import 'package:taga_cuyo/src/features/utils/logger.dart';
 
-class NextQuizScreen extends StatefulWidget {
-  final String categoryId; // Add this line
+class CategoryQuizScreen extends StatefulWidget {
+  final String categoryId;
   final String subcategoryTitle;
   final String currentWord;
   final String userId;
 
-  const NextQuizScreen({
-    Key? key,
-    required this.categoryId, // Add 'required' parameter
+  const CategoryQuizScreen({
+    super.key,
+    required this.categoryId,
     required this.subcategoryTitle,
     required this.currentWord,
     required this.userId,
-  }) : super(key: key);
-
+  });
 
   @override
-  State<NextQuizScreen> createState() => _NextQuizScreenState();
+  State<CategoryQuizScreen> createState() => _CategoryQuizScreenState();
 }
 
-class _NextQuizScreenState extends State<NextQuizScreen> {
+class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
   bool _isCorrect = false;
   bool _isAnswered = false;
   String correctAnswer = '';
   List<dynamic> options = [];
-  String? selectedOption; // Store selected option
-  int _currentWordIndex = 0; // Track the current word index
-  List<Map<String, dynamic>> dataList = []; // Store fetched data
-  final CategoryProgressService _categoryProgressService =
-      CategoryProgressService(); // Create an instance
+  String? selectedOption;
+  int _currentWordIndex = 0;
+  List<Map<String, dynamic>> dataList = [];
 
   @override
   void initState() {
     super.initState();
-    fetchNextSubcategoryData(); // Fetch data on init
+    fetchCategorySubcategoryData();
   }
 
- @override
-Widget build(BuildContext context) {
-  if (dataList.isEmpty) {
-    return const Center(child: CircularProgressIndicator());
-  }
+  @override
+  Widget build(BuildContext context) {
 
-  if (_currentWordIndex >= dataList.length) {
-    // Show congratulations dialog if all questions have been answered
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showCongratulationsDialog();
-    });
-    return const Center(child: Text('No more questions available.'));
-  }
+     Logger.log('Current dataList: $dataList'); // Log the current dataList
+  print('Current dataList: $dataList'); // Additional print for debugging
+  
+    if (dataList.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-  final data = dataList[_currentWordIndex];
-  correctAnswer = data['translated'];
-  options = data['options'];
+    // If all questions have been answered, show a message
+    if (_currentWordIndex >= dataList.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showCongratulationsDialog();
+      });
+      return const Center(child: Text('No more questions available.'));
+    }
 
-  return Scaffold(
-    body: Stack(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              const SizedBox(height: 30),
-              _headerTitle(context, widget.categoryId, widget.subcategoryTitle),
-              const SizedBox(height: 20),
-              _imageWithWordContainer(context, data['image'], data['word']),
-              const SizedBox(height: 20),
-            
-              _notifText(), // Always occupy space
-              
-              const SizedBox(height: 20),
-              _buildOptions(context, options),
-              if (_isAnswered && !_isCorrect)
-                const Padding(
-                  padding: EdgeInsets.only(top: 20),
-                  child: Text(
-                    'Please try again',
-                    style: TextStyle(color: Colors.red, fontSize: 18),
+    final data = dataList[_currentWordIndex];
+    correctAnswer = data['translated'];
+    options = data['options'];
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 30),
+                _headerTitle(context, widget.categoryId, widget.subcategoryTitle),
+                const SizedBox(height: 20),
+                _imageWithWordContainer(context, data['image'], data['word']),
+                const SizedBox(height: 20),
+                _notifText(),
+                const SizedBox(height: 20),
+                _buildOptions(context, options),
+                if (_isAnswered && !_isCorrect)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 20),
+                    child: Text(
+                      'Uliting muli',
+                      style: TextStyle(color: Colors.red, fontSize: 18),
+                    ),
                   ),
-                ),
-              const Spacer(),
-              if (_isAnswered && _isCorrect)
-                MyButton(
-                  onTab: () {
-                    setState(() {
-                      _currentWordIndex++;
-                      _isAnswered = false;
-                      selectedOption = null;
-                    });
-                  },
-                  text: 'Next',
-                ),
-              if (_isAnswered && !_isCorrect)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: MyButton(
+                const Spacer(),
+                if (_isAnswered && _isCorrect)
+                  MyButton(
                     onTab: () {
                       setState(() {
+                        _currentWordIndex++;
                         _isAnswered = false;
                         selectedOption = null;
                       });
                     },
-                    text: 'Try Again',
+                    text: 'Sunod',
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
-        _buildCloseButton(context),
-      ],
-    ),
-  );
+          _buildCloseButton(context),
+        ],
+      ),
+    );
+  }
+
+  Future<void> fetchCategorySubcategoryData() async {
+  try {
+    var snapshot = await FirebaseFirestore.instance
+        .collection('categories')
+        .doc(widget.categoryId)
+        .collection('subcategories')
+        .doc(widget.subcategoryTitle)
+        .collection('words')
+        .get();
+
+    Logger.log('Fetched ${snapshot.docs.length} words'); // Log the number of documents fetched
+
+    if (snapshot.docs.isNotEmpty) {
+      for (var doc in snapshot.docs) {
+        // Log each document's data
+        Logger.log('Fetched word: ${doc.data()}');
+        print('Fetched word: ${doc.data()}'); // Additional print for debugging
+      }
+
+      setState(() {
+        dataList = snapshot.docs.map((doc) => doc.data()).toList();
+        _currentWordIndex = 0; // Reset index
+      });
+    } else {
+      Logger.log('No words found for this subcategory.');
+      print('No words found for this subcategory.'); // Additional print for debugging
+      _showCongratulationsDialog();
+    }
+  } catch (e) {
+    Logger.log('Error fetching Category subcategory data: $e');
+    print('Error fetching Category subcategory data: $e'); // Additional print for debugging
+  }
 }
 
 
-  Future<void> fetchNextSubcategoryData() async {
-    try {
-      var snapshot = await FirebaseFirestore.instance
-          .collection('categories')
-          .doc(widget.categoryId) // Use categoryId instead of title
-          .collection('subcategories')
-          .doc(widget.subcategoryTitle)
-          .collection('words')
-          .where('word', isGreaterThan: widget.currentWord)
-          .get();
-
-      if (snapshot.docs.isNotEmpty) {
-        setState(() {
-          dataList = snapshot.docs
-              .map((doc) => doc.data() as Map<String, dynamic>)
-              .toList();
-        });
-      } else {
-        _showCongratulationsDialog();
-      }
-    } catch (e) {
-      print('Error fetching next subcategory data: $e');
-    }
-  }
-
   void _showCongratulationsDialog() async {
-     _categoryProgressService.createCategoryProgress(
-        widget.userId, widget.categoryId); // Use categoryId here
-    print('Created category progress for ${widget.categoryId}');
-     _categoryProgressService.markSubcategoryAsCompleted(
-        widget.userId, widget.categoryId, widget.subcategoryTitle);
-     _categoryProgressService.incrementCompletedCategories(widget.userId);
-    print('Incremented completed categories for user ${widget.userId}');
-
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -175,14 +162,13 @@ Widget build(BuildContext context) {
     );
   }
 
-
-    void handleAnswer(String selectedAnswer) {
+  void handleAnswer(String selectedAnswer) {
     setState(() {
       selectedOption = selectedAnswer;
       _isAnswered = true;
       _isCorrect = selectedAnswer == correctAnswer;
 
-      if (_currentWordIndex + 1 >= dataList.length) {
+      if (_isCorrect && _currentWordIndex + 1 >= dataList.length) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _showCongratulationsDialog();
         });
@@ -224,7 +210,7 @@ Widget build(BuildContext context) {
     final isCorrectOption = option == correctAnswer;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8,),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: GestureDetector(
         onTap: () {
           handleAnswer(option);
@@ -233,9 +219,7 @@ Widget build(BuildContext context) {
           width: MediaQuery.of(context).size.width * 3 / 4,
           height: 40,
           decoration: BoxDecoration(
-            color: isSelected
-                ? (isCorrectOption ? AppColors.correct : AppColors.wrong)
-                : AppColors.accentColor,
+            color: isSelected ? (isCorrectOption ? AppColors.correct : AppColors.wrong) : AppColors.accentColor,
             borderRadius: BorderRadius.circular(25),
           ),
           child: Center(
@@ -257,7 +241,7 @@ Widget build(BuildContext context) {
         child: Column(
           children: [
             Text(
-              capitalizeFirstLetter(categoryId), // Display the category ID here
+              capitalizeFirstLetter(categoryId),
               style: const TextStyle(
                 fontFamily: AppFonts.fcr,
                 color: AppColors.titleColor,
@@ -278,16 +262,16 @@ Widget build(BuildContext context) {
       ),
     );
   }
+
   Widget _imageWithWordContainer(BuildContext context, String? imageUrl, String word) {
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
         _imageContainer(context, imageUrl),
-        _wordContainer(context, word), // Display the word here
+        _wordContainer(context, word),
       ],
     );
   }
-
 
   Widget _imageContainer(BuildContext context, String? imageUrl) {
     return Container(
@@ -304,7 +288,12 @@ Widget build(BuildContext context) {
                 imageUrl,
                 fit: BoxFit.cover,
               )
-            : const Center(child: Text('Image not available')),
+            : const Center(
+                child: Text(
+                  'Image not available',
+                  textAlign: TextAlign.justify,
+                ),
+              ),
       ),
     );
   }
@@ -333,25 +322,24 @@ Widget build(BuildContext context) {
       ),
     );
   }
-Widget _notifText() {
-  // Reserve space for the notification text
-  return Container(
-    height: 50, // Fixed height for notification space
-    width: MediaQuery.of(context).size.width * 0.8,
-    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-    decoration: BoxDecoration(
-      color: _isAnswered && _isCorrect ? AppColors.correct : Colors.transparent,
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Center(
-      child: _isAnswered && _isCorrect 
-        ? const Text(
-            'Correct!',
-            style: TextStyle(fontSize: 20, color: Colors.white),
-          )
-        : const SizedBox.shrink(), // Return empty space if not correct
-    ),
-  );
-}
 
+  Widget _notifText() {
+    return Container(
+      height: 50,
+      width: MediaQuery.of(context).size.width * 0.8,
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+      decoration: BoxDecoration(
+        color: _isAnswered && _isCorrect ? AppColors.correct : Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Center(
+        child: _isAnswered && _isCorrect
+            ? const Text(
+                'Saktong sagot!',
+                style: TextStyle(fontFamily: AppFonts.fcr, fontSize: 20, color: Colors.white),
+              )
+            : const Text(''),
+      ),
+    );
+  }
 }

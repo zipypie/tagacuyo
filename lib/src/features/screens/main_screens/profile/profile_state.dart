@@ -1,3 +1,6 @@
+//profile_state.dart
+
+
 import 'package:equatable/equatable.dart';
 
 abstract class ProfileState extends Equatable {

@@ -5,6 +5,7 @@ import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
 import 'package:taga_cuyo/src/features/services/authentication.dart';
 import 'package:taga_cuyo/src/features/services/progress_service.dart';
+import 'package:taga_cuyo/src/features/utils/logger.dart';
 
 class LessonQuizScreen extends StatefulWidget {
   final String lessonName;
@@ -17,10 +18,10 @@ class LessonQuizScreen extends StatefulWidget {
   });
 
   @override
-  _LessonQuizScreenState createState() => _LessonQuizScreenState();
+  LessonQuizScreenState createState() => LessonQuizScreenState(); 
 }
 
-class _LessonQuizScreenState extends State<LessonQuizScreen> {
+class LessonQuizScreenState extends State<LessonQuizScreen> { 
   final LessonProgressService _progressService = LessonProgressService();
   late int completedLessons = 0; // Default value of 0
   final AuthService _authService = AuthService();
@@ -43,9 +44,9 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
     String? userId = _authService.getUserId();
     if (userId != null) {
       completedLessons = await _progressService.getCompletedLessons(userId); // Use correct service instance
-      print('Completed Lessons: $completedLessons');
+      Logger.log('Completed Lessons: $completedLessons');
     } else {
-      print('User ID is null.');
+      Logger.log('User ID is null.');
     }
   }
 
@@ -82,7 +83,7 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
     }
 
     // Proceed to update only if not completed
-    print('Updating user progress for lesson ID: ${widget.documentId}');
+    Logger.log('Updating user progress for lesson ID: ${widget.documentId}');
     await userProgressDocRef.set({
       'lessons': FieldValue.increment(1),
       'lessons_progress': {
@@ -96,7 +97,7 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
       const SnackBar(content: Text('Lesson progress updated!')),
     );
   } catch (e) {
-    print('Error updating lesson progress: $e');
+    Logger.log('Error updating lesson progress: $e');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Error updating lesson progress: $e')),
     );
@@ -106,7 +107,7 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
 
   Future<void> _fetchWords() async {
     try {
-      print('Fetching words for lesson: ${widget.lessonName}');
+      Logger.log('Fetching words for lesson: ${widget.lessonName}');
       final querySnapshot = await FirebaseFirestore.instance
           .collection('lessons')
           .where('lesson_name', isEqualTo: widget.lessonName)
@@ -114,7 +115,7 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
 
       if (querySnapshot.docs.isNotEmpty) {
         final lessonDoc = querySnapshot.docs[0];
-        print('Lesson found: ${lessonDoc.id}');
+        Logger.log('Lesson found: ${lessonDoc.id}');
 
         final wordsSnapshot =
             await lessonDoc.reference.collection('words').get();
@@ -123,11 +124,11 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
           _quizIds = querySnapshot.docs.map((doc) => doc.id).toList();
           for (var doc in wordsSnapshot.docs) {
             final data = doc.data();
-            print('Raw word document data: $data'); // Print raw data to debug
+            Logger.log('Raw word document data: $data'); // Print raw data to debug
 
             // Retrieve options
             List<String> options = List<String>.from(data['options'] ?? []);
-            print('Retrieved options: $options'); // Log retrieved options
+            Logger.log('Retrieved options: $options'); // Log retrieved options
 
             // Shuffle options
             options.shuffle(); // Shuffle the options
@@ -144,23 +145,23 @@ class _LessonQuizScreenState extends State<LessonQuizScreen> {
             _isLoading = false;
           });
 
-          print('Final fetched words: $_words');
+          Logger.log('Final fetched words: $_words');
         } else {
-          print('No words found for lesson ${widget.lessonName}');
+          Logger.log('No words found for lesson ${widget.lessonName}');
           setState(() {
             _words = [];
             _isLoading = false;
           });
         }
       } else {
-        print('No lesson found with name ${widget.lessonName}');
+        Logger.log('No lesson found with name ${widget.lessonName}');
         setState(() {
           _words = [];
           _isLoading = false;
         });
       }
     } catch (e) {
-      print('Error fetching words: $e');
+      Logger.log('Error fetching words: $e');
       setState(() {
         _isLoading = false;
       });

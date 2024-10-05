@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:taga_cuyo/src/features/utils/logger.dart';
 
 class CategoryProgressService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -17,7 +18,7 @@ class CategoryProgressService {
       Map<String, dynamic> categoryData = snapshot.data() as Map<String, dynamic>;
       return categoryData['subcategories'] ?? {}; // Return subcategories map
     } else {
-      print('Category document does not exist for user $userId and category $categoryTitle.');
+      Logger.log('Category document does not exist for user $userId and category $categoryTitle.');
       return {}; // Return an empty map if the document does not exist
     }
   }
@@ -33,9 +34,9 @@ class CategoryProgressService {
           .set({
         'subcategories': {}, // Initialize an empty map for subcategories
       }, SetOptions(merge: true)); // Use merge to ensure data isn't overwritten
-      print('Category progress created for $categoryTitle');
+      Logger.log('Category progress created for $categoryTitle');
     } catch (e) {
-      print('Error creating category progress: $e');
+      Logger.log('Error creating category progress: $e');
     }
   }
 
@@ -55,32 +56,37 @@ class CategoryProgressService {
         Map<String, dynamic> categoryData = categoryDoc.data() as Map<String, dynamic>;
         Map<String, dynamic> subcategories = categoryData['subcategories'] ?? {};
 
-        // Mark the specific subcategory as completed or add it if it doesn't exist
-        subcategories[subcategoryId] = {'isCompleted': true};
+        // Check if the subcategory is already marked as completed
+        if (subcategories[subcategoryId]?['isCompleted'] != true) {
+          // Mark the specific subcategory as completed
+          subcategories[subcategoryId] = {'isCompleted': true};
 
-        // Update Firestore with the modified subcategories map
-        await _firestore
-            .collection('user_progress')
-            .doc(userId)
-            .collection('categories_progress')
-            .doc(categoryId)
-            .set({
-          'subcategories': subcategories // Set the updated map
-        }, SetOptions(merge: true)); // Use merge to avoid overwriting other subcategories
+          // Update Firestore with the modified subcategories map
+          await _firestore
+              .collection('user_progress')
+              .doc(userId)
+              .collection('categories_progress')
+              .doc(categoryId)
+              .set({
+            'subcategories': subcategories // Set the updated map
+          }, SetOptions(merge: true)); // Use merge to avoid overwriting other subcategories
 
-        print("Subcategory $subcategoryId marked as completed successfully.");
+          Logger.log("Subcategory $subcategoryId marked as completed successfully.");
 
-        // Optional: Increment completed categories if all are completed
-        bool allSubcategoriesCompleted = subcategories.values.every((v) => v['isCompleted'] == true);
-        if (allSubcategoriesCompleted) {
-          await incrementCompletedCategories(userId);
-          print("All subcategories completed for category $categoryId. Incrementing completed categories.");
+          // Optional: Increment completed categories if all are completed
+          bool allSubcategoriesCompleted = subcategories.values.every((v) => v['isCompleted'] == true);
+          if (allSubcategoriesCompleted) {
+            await incrementCompletedCategories(userId);
+            Logger.log("All subcategories completed for category $categoryId. Incrementing completed categories.");
+          }
+        } else {
+          Logger.log("Subcategory $subcategoryId was already marked as completed.");
         }
       } else {
-        print("Category document does not exist for user $userId and category $categoryId.");
+        Logger.log("Category document does not exist for user $userId and category $categoryId.");
       }
     } catch (e) {
-      print("Error marking subcategory as completed: $e");
+      Logger.log("Error marking subcategory as completed: $e");
     }
   }
 
@@ -90,9 +96,9 @@ class CategoryProgressService {
       await _firestore.collection('user_progress').doc(userId).update({
         'categories': FieldValue.increment(1),
       });
-      print('Completed categories incremented for user $userId');
+      Logger.log('Completed categories incremented for user $userId');
     } catch (e) {
-      print('Error incrementing completed categories: $e');
+      Logger.log("Error incrementing completed categories: $e");
     }
   }
 }
