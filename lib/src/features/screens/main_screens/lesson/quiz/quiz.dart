@@ -365,7 +365,7 @@ class LessonQuizScreenState extends State<LessonQuizScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Image.asset(
-            'assets/images/monkey.png',
+            'assets/images/teacher.png',
             height: 120,
             width: 120,
           ),

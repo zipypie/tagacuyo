@@ -10,20 +10,23 @@ class ExplorePage extends StatelessWidget {
     return Scaffold(
       appBar: _buildAppBar(),
       body:  const Padding(
-        padding: EdgeInsets.all(25.0),
+        padding: EdgeInsets.fromLTRB(20, 20, 0, 0),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SectionTitle(title: 'Tuklasin ang wikang Cuyonon'),
+              SectionTitle(title: 'Tuklasin ang wikang Cuyonon', fontSize: 18),
               SizedBox(height: 16),
-              ExploreDescription(),
+              Padding(
+                padding: EdgeInsets.only(right: 20.0),
+                child: ExploreDescription(),
+              ),
               SizedBox(height: 32),
-              SectionTitle(title: 'Pagdiriwang sa Cuyo'),
+              SectionTitle(title: 'Pagdiriwang sa Cuyo', fontSize: 18),
               SizedBox(height: 16),
               FestivalList(),
               SizedBox(height: 32),
-              SectionTitle(title: 'Sikat na Destinasyon', fontSize: 20),
+              SectionTitle(title: 'Sikat na Destinasyon', fontSize: 18),
               SizedBox(height: 16),
               DestinationList(),
             ],
@@ -77,17 +80,13 @@ class ExploreDescription extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(25),
       decoration: const BoxDecoration(
         color: AppColors.secondaryBackground,
         borderRadius: BorderRadius.all(Radius.circular(10)),
       ),
       child: const Text(
-        'Ang Cuyonon ay miyembro ng sangay ng Pilipinas ng mga wikang Malayo—Polynesian. '
-        'Pangunahing sinasalita ito sa Cuyo Islands, sa pagitan ng Northern Palawan at Panay Island sa '
-        'Pilipinas, sa pagitan ng 93,000 at 120,000 katao. Ang wikang ito, ay sinasalita ng isang partikular '
-        'na tao sa Palawan, at ito ang katutubong wika ng mga Cuyonon, ay nagsisilbing natatanging '
-        'kultural na tradisyonal na kaalaman.',
+        '"Tuklasin ang mayamang pamana ng Cuyo—kung saan buhay na buhay ang wikang Cuyonon, makulay na tradisyon, at daang-taong kasaysayan. Matuto, mag-explore, at kumonekta sa pusong kultural ng Pilipinas."',
         style: TextStyle(fontSize: 14, fontFamily: AppFonts.kanitLight),
         textAlign: TextAlign.justify,
       ),
@@ -95,36 +94,63 @@ class ExploreDescription extends StatelessWidget {
   }
 }
 
+
 class FestivalList extends StatelessWidget {
   const FestivalList({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
+    final double itemWidth = screenSize.width * 0.6; // 60% of screen width
+    final double itemHeight = screenSize.height * 0.25; // 25% of screen height
+
     return SizedBox(
-      height: 200,
+      height: itemHeight,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
-          _buildFestivalItem('Purogatan Festival', Colors.blueAccent),
+          _buildFestivalItem('Purongitan Festival', 'assets/images/purongitan.jpg', itemWidth, itemHeight),
           const SizedBox(width: 10),
-          _buildFestivalItem('Purogatan Festival', Colors.greenAccent),
+          _buildFestivalItem('Ati Ati of Cuyo', 'assets/images/purongitan_2.jpg', itemWidth, itemHeight),
         ],
       ),
     );
   }
 
-  Widget _buildFestivalItem(String title, Color color) {
-    return Container(
-      width: 150,
-      color: color,
-      child: Center(
-        child: Text(
-          title,
-          style: const TextStyle(color: Colors.white),
-        ),
+  Widget _buildFestivalItem(String title, String imagePath, double width, double height) {
+  return Container(
+    width: width,
+    height: height,
+    padding: const EdgeInsets.symmetric(horizontal: 10),
+    decoration: BoxDecoration(
+      image: DecorationImage(
+        image: AssetImage(imagePath),
+        fit: BoxFit.cover,
       ),
-    );
-  }
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween, // Align items within the column
+      children: [
+        const SizedBox(), // This can be used to push the title down
+        Container(
+          width: width*0.7, // Use the same width as the parent container
+          height: 30, // Adjust height as needed
+          color: AppColors.titleColor,
+          child: Center( // Center the text horizontally and vertically
+            child: Text(
+              title,
+              style: const TextStyle(color: Colors.white,fontFamily: AppFonts.fcr, fontSize: 21),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 }
 
 class DestinationList extends StatelessWidget {
@@ -132,28 +158,53 @@ class DestinationList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
+    final double itemWidth = screenSize.width * 0.6; // 60% of screen width
+    final double itemHeight = screenSize.height * 0.25; // 25% of screen height
+
     return SizedBox(
-      height: 200,
+      height: itemHeight,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
-          _buildDestinationItem('Cuyo Town Beach', Colors.redAccent),
+          _buildDestinationItem('Capusan Beach', 'assets/images/capusan_beach.jpg', itemWidth, itemHeight),
           const SizedBox(width: 10),
-          _buildDestinationItem('St. Augustine\'s Church', Colors.orangeAccent),
+          _buildDestinationItem('St. Augustine\'s Church', 'assets/images/fort_cuyo.jpg', itemWidth, itemHeight),
         ],
       ),
     );
   }
 
-  Widget _buildDestinationItem(String title, Color color) {
+  Widget _buildDestinationItem(String title, String imagePath, double width, double height) {
     return Container(
-      width: 150,
-      color: color,
-      child: Center(
-        child: Text(
-          title,
-          style: const TextStyle(color: Colors.white),
+      width: width,
+      height: height,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(imagePath),
+          fit: BoxFit.cover,
         ),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const SizedBox(),
+          Container(
+            width: width * 0.7,
+            height: 30,
+            color: AppColors.titleColor,
+            child: Center(
+              child: Text(
+                title,
+                style: const TextStyle(color: Colors.white, fontFamily: AppFonts.fcr, fontSize: 21),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

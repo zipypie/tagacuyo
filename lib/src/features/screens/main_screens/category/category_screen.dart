@@ -20,7 +20,8 @@ class CategoryScreen extends StatefulWidget {
   State<CategoryScreen> createState() => _CategoryScreenState();
 }
 
-class _CategoryScreenState extends State<CategoryScreen> with AutomaticKeepAliveClientMixin<CategoryScreen> {
+class _CategoryScreenState extends State<CategoryScreen>
+    with AutomaticKeepAliveClientMixin<CategoryScreen> {
   List<Category> categories = [];
   final AuthService _authService = AuthService();
   String? userId;
@@ -43,37 +44,39 @@ class _CategoryScreenState extends State<CategoryScreen> with AutomaticKeepAlive
   }
 
   Future<void> fetchCategories() async {
-  try {
-    CollectionReference collection = FirebaseFirestore.instance.collection(categoriesCollection);
-    QuerySnapshot querySnapshot = await collection.get();
+    try {
+      CollectionReference collection =
+          FirebaseFirestore.instance.collection(categoriesCollection);
+      QuerySnapshot querySnapshot = await collection.get();
 
-    List<Category> fetchedCategories = [];
+      List<Category> fetchedCategories = [];
 
-    for (var doc in querySnapshot.docs) {
-      String id = doc.id;
-      String imagePath = (doc.data() as Map<String, dynamic>?)?['image_path'] ?? '';
-      String imageUrl = await fetchImageFromStorage(imagePath);
-      List<Subcategory> subcategories = await fetchSubcategories(id);
+      for (var doc in querySnapshot.docs) {
+        String id = doc.id;
+        String imagePath =
+            (doc.data() as Map<String, dynamic>?)?['image_path'] ?? '';
+        String imageUrl = await fetchImageFromStorage(imagePath);
+        List<Subcategory> subcategories = await fetchSubcategories(id);
 
-      Logger.log("Fetched category: $id with ${subcategories.length} subcategories");
+        Logger.log(
+            "Fetched category: $id with ${subcategories.length} subcategories");
 
-      fetchedCategories.add(
-        Category(
-          id: id,
-          imagePath: imageUrl,
-          subcategories: subcategories,
-        ),
-      );
+        fetchedCategories.add(
+          Category(
+            id: id,
+            imagePath: imageUrl,
+            subcategories: subcategories,
+          ),
+        );
+      }
+
+      setState(() {
+        categories = fetchedCategories;
+      });
+    } catch (e) {
+      Logger.log("Error fetching categories: $e");
     }
-
-    setState(() {
-      categories = fetchedCategories;
-    });
-  } catch (e) {
-    Logger.log("Error fetching categories: $e");
   }
-}
-
 
   Future<String> fetchImageFromStorage(String imagePath) async {
     try {
@@ -182,7 +185,11 @@ class _CategoryScreenState extends State<CategoryScreen> with AutomaticKeepAlive
           scrollDirection: Axis.horizontal,
           child: Row(
             children: category.subcategories.map((subcategory) {
-              return _subcategoryImageWithTitle(subcategory.imagePath, capitalizeFirstLetter(subcategory.name), subcategory, category);
+              return _subcategoryImageWithTitle(
+                  subcategory.imagePath,
+                  capitalizeFirstLetter(subcategory.name),
+                  subcategory,
+                  category);
             }).toList(),
           ),
         ),
@@ -190,16 +197,18 @@ class _CategoryScreenState extends State<CategoryScreen> with AutomaticKeepAlive
     );
   }
 
-  Widget _subcategoryImageWithTitle(String imagePath, String title, Subcategory subcategory, Category category) {
+  Widget _subcategoryImageWithTitle(String imagePath, String title,
+      Subcategory subcategory, Category category) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => CategoryQuizScreen(
-              categoryId:  category.id,
-              subcategoryTitle: title,
-              currentWord: title,
+              subcategoryTitle: subcategory.name,
+              categoryId: category.id, // Use the category's id
+              currentWord: '',
+              subcategoryId: subcategory.id,
               userId: userId ?? '',
             ),
           ),
@@ -225,7 +234,8 @@ class _CategoryScreenState extends State<CategoryScreen> with AutomaticKeepAlive
                         imagePath,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
-                          return const Center(child: Text('Image not available'));
+                          return const Center(
+                              child: Text('Image not available'));
                         },
                       ),
                     )

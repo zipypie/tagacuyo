@@ -56,31 +56,41 @@ class CategoryProgressService {
         Map<String, dynamic> categoryData = categoryDoc.data() as Map<String, dynamic>;
         Map<String, dynamic> subcategories = categoryData['subcategories'] ?? {};
 
-        // Check if the subcategory is already marked as completed
-        if (subcategories[subcategoryId]?['isCompleted'] != true) {
-          // Mark the specific subcategory as completed
-          subcategories[subcategoryId] = {'isCompleted': true};
+        // Check if the subcategory exists and contains quizzes
+        if (subcategories.containsKey(subcategoryId)) {
+          // Ensure the subcategory has quizzes
+          if (subcategories[subcategoryId]['quizzes'] != null && (subcategories[subcategoryId]['quizzes'] as List).isNotEmpty) {
+            // Check if the subcategory is already marked as completed
+            if (subcategories[subcategoryId]['isCompleted'] != true) {
+              // Mark the specific subcategory as completed
+              subcategories[subcategoryId]['isCompleted'] = true;
 
-          // Update Firestore with the modified subcategories map
-          await _firestore
-              .collection('user_progress')
-              .doc(userId)
-              .collection('categories_progress')
-              .doc(categoryId)
-              .set({
-            'subcategories': subcategories // Set the updated map
-          }, SetOptions(merge: true)); // Use merge to avoid overwriting other subcategories
+              // Update Firestore with the modified subcategories map
+              await _firestore
+                  .collection('user_progress')
+                  .doc(userId)
+                  .collection('categories_progress')
+                  .doc(categoryId)
+                  .set({
+                'subcategories': subcategories // Set the updated map
+              }, SetOptions(merge: true)); // Use merge to avoid overwriting other subcategories
 
-          Logger.log("Subcategory $subcategoryId marked as completed successfully.");
+              Logger.log("Subcategory $subcategoryId marked as completed successfully.");
 
-          // Optional: Increment completed categories if all are completed
-          bool allSubcategoriesCompleted = subcategories.values.every((v) => v['isCompleted'] == true);
-          if (allSubcategoriesCompleted) {
-            await incrementCompletedCategories(userId);
-            Logger.log("All subcategories completed for category $categoryId. Incrementing completed categories.");
+              // Optional: Increment completed categories if all are completed
+              bool allSubcategoriesCompleted = subcategories.values.every((v) => v['isCompleted'] == true);
+              if (allSubcategoriesCompleted) {
+                await incrementCompletedCategories(userId);
+                Logger.log("All subcategories completed for category $categoryId. Incrementing completed categories.");
+              }
+            } else {
+              Logger.log("Subcategory $subcategoryId was already marked as completed.");
+            }
+          } else {
+            Logger.log("Subcategory $subcategoryId has no quizzes to complete.");
           }
         } else {
-          Logger.log("Subcategory $subcategoryId was already marked as completed.");
+          Logger.log("Subcategory $subcategoryId does not exist in category $categoryId.");
         }
       } else {
         Logger.log("Category document does not exist for user $userId and category $categoryId.");

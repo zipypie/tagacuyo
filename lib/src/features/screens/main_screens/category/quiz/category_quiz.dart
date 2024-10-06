@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart'; // Import Firebase Storage
 import 'package:flutter/material.dart';
 import 'package:taga_cuyo/src/features/common_widgets/button.dart';
 import 'package:taga_cuyo/src/features/constants/capitalize.dart';
@@ -9,6 +10,7 @@ import 'package:taga_cuyo/src/features/utils/logger.dart';
 class CategoryQuizScreen extends StatefulWidget {
   final String categoryId;
   final String subcategoryTitle;
+  final String subcategoryId;
   final String currentWord;
   final String userId;
 
@@ -17,7 +19,8 @@ class CategoryQuizScreen extends StatefulWidget {
     required this.categoryId,
     required this.subcategoryTitle,
     required this.currentWord,
-    required this.userId,
+    required this.userId, 
+    required this.subcategoryId,
   });
 
   @override
@@ -41,10 +44,8 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-     Logger.log('Current dataList: $dataList'); // Log the current dataList
-  print('Current dataList: $dataList'); // Additional print for debugging
-  
+    Logger.log('Current dataList: $dataList'); 
+    
     if (dataList.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -71,7 +72,19 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
                 const SizedBox(height: 30),
                 _headerTitle(context, widget.categoryId, widget.subcategoryTitle),
                 const SizedBox(height: 20),
-                _imageWithWordContainer(context, data['image'], data['word']),
+                // Fetch the image URL here
+                FutureBuilder<String>(
+                  future: fetchImageFromStorage(data['image_path']),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return const Center(child: Text('Error loading image.'));
+                    } else {
+                      return _imageWithWordContainer(context, snapshot.data, data['word']);
+                    }
+                  },
+                ),
                 const SizedBox(height: 20),
                 _notifText(),
                 const SizedBox(height: 20),
@@ -80,7 +93,7 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
                   const Padding(
                     padding: EdgeInsets.only(top: 20),
                     child: Text(
-                      'Uliting muli',
+                      'Ulitin muli',
                       style: TextStyle(color: Colors.red, fontSize: 18),
                     ),
                   ),
@@ -105,23 +118,24 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
     );
   }
 
-  Future<void> fetchCategorySubcategoryData() async {
+
+
+Future<void> fetchCategorySubcategoryData() async {
   try {
+    Logger.log('Fetching data for Category ID: ${widget.categoryId}, Subcategory Title: ${widget.subcategoryTitle}');
+    
     var snapshot = await FirebaseFirestore.instance
         .collection('categories')
         .doc(widget.categoryId)
         .collection('subcategories')
-        .doc(widget.subcategoryTitle)
+        .doc(widget.subcategoryId)
         .collection('words')
         .get();
 
     Logger.log('Fetched ${snapshot.docs.length} words'); // Log the number of documents fetched
-
     if (snapshot.docs.isNotEmpty) {
       for (var doc in snapshot.docs) {
-        // Log each document's data
-        Logger.log('Fetched word: ${doc.data()}');
-        print('Fetched word: ${doc.data()}'); // Additional print for debugging
+        Logger.log('Fetched word: ${doc.data()}'); // Log each fetched word
       }
 
       setState(() {
@@ -130,15 +144,23 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
       });
     } else {
       Logger.log('No words found for this subcategory.');
-      print('No words found for this subcategory.'); // Additional print for debugging
-      _showCongratulationsDialog();
+      _showCongratulationsDialog(); // Consider handling this more gracefully
     }
   } catch (e) {
     Logger.log('Error fetching Category subcategory data: $e');
-    print('Error fetching Category subcategory data: $e'); // Additional print for debugging
   }
 }
 
+
+  Future<String> fetchImageFromStorage(String imagePath) async {
+    try {
+      Reference imageRef = FirebaseStorage.instance.refFromURL(imagePath);
+      return await imageRef.getDownloadURL();
+    } catch (e) {
+      Logger.log("Error fetching image from storage: $e");
+      return '';
+    }
+  }
 
   void _showCongratulationsDialog() async {
     showDialog(
@@ -277,51 +299,50 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
     return Container(
       width: MediaQuery.of(context).size.width * 2.3 / 3,
       height: MediaQuery.of(context).size.height * 1 / 3,
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(25)),
-        color: AppColors.accentColor,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.all(Radius.circular(25)),
+        color: const Color.fromARGB(150, 255, 255, 255), // Semi-transparent background
+        border: Border.all(
+          color: const Color.fromARGB(255, 100, 142, 190), // Border color
+          width: 5, // Adjust the width of the border if needed
+        ),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(25),
-        child: imageUrl != null
-            ? Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-              )
-            : const Center(
-                child: Text(
-                  'Image not available',
-                  textAlign: TextAlign.justify,
-                ),
-              ),
+        child: imageUrl != null && imageUrl.isNotEmpty
+            ? Image.network(imageUrl, fit: BoxFit.cover)
+            : const Center(child: CircularProgressIndicator()),
       ),
     );
   }
 
-  Widget _wordContainer(BuildContext context, String title) {
-    return Positioned(
-      bottom: 20,
-      child: Container(
-        height: 50,
-        width: 170,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(40),
-          color: Colors.white.withOpacity(0.8),
-        ),
-        child: Center(
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontFamily: AppFonts.fcr,
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
+  Widget _wordContainer(BuildContext context, String word) {
+  return Positioned(
+    bottom: 0,
+    child: Container(
+      decoration: const BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(25)),
+        color: Color.fromARGB(150, 255, 255, 255), // Set opacity here (0-255)
+      ),
+      padding: const EdgeInsets.all(15),
+      width: MediaQuery.of(context).size.width * 2.3 / 3,
+      child: Center(
+        child: Text(
+          word,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontFamily: AppFonts.fcr,
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+            color: AppColors.titleColor,
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
+
 
   Widget _notifText() {
     return Container(
@@ -335,8 +356,8 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
       child: Center(
         child: _isAnswered && _isCorrect
             ? const Text(
-                'Saktong sagot!',
-                style: TextStyle(fontFamily: AppFonts.fcr, fontSize: 20, color: Colors.white),
+                'Tama ang iyong sagot!',
+                style: TextStyle(fontFamily: AppFonts.fcr, fontSize: 21, color: Color.fromARGB(255, 0, 0, 0)),
               )
             : const Text(''),
       ),

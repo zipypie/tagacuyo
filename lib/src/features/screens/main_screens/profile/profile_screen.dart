@@ -20,7 +20,8 @@ class ProfileScreen extends StatelessWidget {
     final profileBloc = BlocProvider.of<ProfileBloc>(context);
 
     // Fetch user profile only if state is ProfileLoading or initial state
-    if (profileBloc.state is ProfileLoading || profileBloc.state is ProfileError) {
+    if (profileBloc.state is ProfileLoading ||
+        profileBloc.state is ProfileError) {
       profileBloc.add(FetchUserProfile(uid!));
     }
 
@@ -35,7 +36,6 @@ class ProfileScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildHeader(state.name, state.dateJoined),
-                  const SizedBox(height: 20),
                   _buildProgressSection(
                     context,
                     lessonsProgress: state.lessonsProgress,
@@ -58,7 +58,6 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
-
 
   // Header Section
   Widget _buildHeader(String name, String dateJoined) {
@@ -101,7 +100,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'Joined: $dateJoined',
+                    'Sumali noong: $dateJoined',
                     style: const TextStyle(
                       fontSize: 14,
                       color: Colors.grey,
@@ -125,63 +124,82 @@ class ProfileScreen extends StatelessWidget {
       required int streakProgress}) {
     final halfScreenWidth = MediaQuery.of(context).size.width * 0.4;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 5),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Iyong Progresso',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.titleColor,
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Color.fromARGB(255, 80, 93, 100), 
+            width: 1, 
+          ),
+           top: BorderSide(
+            color: Color.fromARGB(255, 80, 93, 100), 
+            width: 1,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(30, 30, 30, 50),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Iyong Progresso',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.titleColor,
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 20,
-            runSpacing: 15,
-            children: [
-              _buildProgressItem(
-                context: context,
-                icon: Image.asset('assets/icons/progress_2.png', width: 30, height: 30),
-                label: 'Aralin',
-                value: lessonsProgress.toString(),
-                maxWidth: halfScreenWidth,
-              ),
-              _buildProgressItem(
-                context: context,
-                icon: Image.asset('assets/icons/progress_3.png', width: 30, height: 30),
-                label: 'Kategorya',
-                value: categoriesProgress.toString(),
-                maxWidth: halfScreenWidth,
-              ),
-              _buildProgressItem(
-                context: context,
-                icon: Image.asset('assets/icons/progress_4.png', width: 30, height: 30),
-                label: 'Minuto',
-                value: minutesProgress.toString(),
-                maxWidth: halfScreenWidth,
-              ),
-              _buildProgressItem(
-                context: context,
-                icon: Image.asset('assets/icons/progress_5.png', width: 30, height: 30),
-                label: 'Araw',
-                value: daysProgress.toString(),
-                maxWidth: halfScreenWidth,
-              ),
-              _buildProgressItem(
-                context: context,
-                icon: Image.asset('assets/icons/progress_6.png', width: 30, height: 30),
-                label: 'Sunod sunod na araw',
-                value: streakProgress.toString(),
-                maxWidth: halfScreenWidth,
-              ),
-            ],
-          ),
-        ],
+            const SizedBox(height: 20),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 20,
+              runSpacing: 15,
+              children: [
+                _buildProgressItem(
+                  context: context,
+                  icon: Image.asset('assets/icons/progress_2.png',
+                      width: 30, height: 30),
+                  label: 'Aralin',
+                  value: lessonsProgress.toString(),
+                  maxWidth: halfScreenWidth,
+                ),
+                _buildProgressItem(
+                  context: context,
+                  icon: Image.asset('assets/icons/progress_3.png',
+                      width: 30, height: 30),
+                  label: 'Kategorya',
+                  value: categoriesProgress.toString(),
+                  maxWidth: halfScreenWidth,
+                ),
+                _buildProgressItem(
+                  context: context,
+                  icon: Image.asset('assets/icons/progress_4.png',
+                      width: 30, height: 30),
+                  label: 'Minuto',
+                  value: minutesProgress.toString(),
+                  maxWidth: halfScreenWidth,
+                ),
+                _buildProgressItem(
+                  context: context,
+                  icon: Image.asset('assets/icons/progress_5.png',
+                      width: 30, height: 30),
+                  label: 'Araw',
+                  value: daysProgress.toString(),
+                  maxWidth: halfScreenWidth,
+                ),
+                _buildProgressItem(
+                  context: context,
+                  icon: Image.asset('assets/icons/progress_6.png',
+                      width: 30, height: 30),
+                  label: 'Sunod sunod na araw',
+                  value: streakProgress.toString(),
+                  maxWidth: halfScreenWidth * 1.4,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -241,25 +259,19 @@ class ProfileScreen extends StatelessWidget {
   // Profile Options
   Widget _buildProfileOptions(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+      padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
       child: ListView(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         children: [
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('My Profile'),
-            onTap: () {
-              // Navigate to profile screen
-            },
-          ),
           ListTile(
             leading: const Icon(Icons.lock),
             title: const Text('Magpalit ng Password'),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const ChangePasswordScreen()),
               );
             },
           ),

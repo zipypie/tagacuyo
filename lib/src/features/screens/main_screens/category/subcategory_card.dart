@@ -26,7 +26,9 @@ class SubcategoryCard extends StatelessWidget {
             builder: (context) => CategoryQuizScreen(
               subcategoryTitle: subcategory.name,
               categoryId: category.id, // Use the category's id
-              userId: userId, currentWord: '',
+              userId: userId,
+              currentWord: '',
+              subcategoryId: subcategory.id, // Pass subcategory ID here
             ),
           ),
         );
