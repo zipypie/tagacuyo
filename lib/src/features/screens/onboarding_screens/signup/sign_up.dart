@@ -6,7 +6,7 @@ import 'package:taga_cuyo/src/features/common_widgets/text_input.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
 import 'package:taga_cuyo/src/features/constants/logo.dart';
-import 'package:taga_cuyo/src/features/screens/login/login.dart';
+import 'package:taga_cuyo/src/features/screens/onboarding_screens/login/login.dart';
 import 'package:taga_cuyo/src/features/services/authentication.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -43,7 +43,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       lastname: lastnameController.text,
       email: emailController.text,
       password: passwordController.text,
-      age: ageController.text,
+      age: int.parse(ageController.text),
       gender: selectedGender!,
     );
 

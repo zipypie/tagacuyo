@@ -13,6 +13,7 @@ class ProfileLoading extends ProfileState {}
 class ProfileLoaded extends ProfileState {
   final String name;
   final String dateJoined;
+  final String profileImageUrl; // Add this line
   final int lessonsProgress;
   final int categoriesProgress;
   final int minutesProgress;
@@ -22,6 +23,7 @@ class ProfileLoaded extends ProfileState {
   ProfileLoaded({
     required this.name,
     required this.dateJoined,
+    required this.profileImageUrl, // Add this line
     required this.lessonsProgress,
     required this.categoriesProgress,
     required this.minutesProgress,

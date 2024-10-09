@@ -31,6 +31,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       Timestamp joinedTimestamp = userDoc['date_joined'] ?? Timestamp.now();
       String dateJoined = joinedTimestamp.toDate().toLocal().toString().split(' ')[0];
 
+      // Fetch profile image URL
+      String profileImageUrl = userDoc['profile_image'] ?? ''; // Add this line
+
       // Reference to the user progress document
       final progressDocRef = FirebaseFirestore.instance
           .collection('user_progress')
@@ -65,6 +68,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       emit(ProfileLoaded(
         name: name,
         dateJoined: dateJoined,
+        profileImageUrl: profileImageUrl, // Now defined and used correctly
         lessonsProgress: lessonsProgress,
         categoriesProgress: categoriesProgress,
         minutesProgress: minutesProgress,
@@ -78,6 +82,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     emit(ProfileError("Failed to fetch user data: ${e.toString()}"));
   }
 }
+
 
 
   String capitalize(String input) {

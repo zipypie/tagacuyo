@@ -64,56 +64,54 @@ class AuthService {
   }
 
   // Sign out the user
-  Future<void> signOut() async {
-    await _auth.signOut();
+Future<String> signUpUser({
+  required String firstname,
+  required String lastname,
+  required String email,
+  required String password,
+  required int age, // Now using int for age
+  required String gender,
+  String? profileImage,
+}) async {
+  String res = "Some error occurred";
+  try {
+    // Create a user with email and password
+    UserCredential credential = await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    String uid = credential.user!.uid;
+
+    // Add user details to Firestore
+    await _firestore.collection('users').doc(uid).set({
+      'firstname': firstname,
+      'lastname': lastname,
+      'email': email,
+      'age': age, // Now using int for age
+      'gender': gender,
+      'uid': uid,
+      'date_joined': DateTime.now(),
+      'profile_image': profileImage ?? '', // Default to empty string if null
+    });
+
+    // Add progress details to 'user_progress' collection with default values
+    await _firestore.collection('user_progress').doc(uid).set({
+      'categories': 0,  // Default value
+      'days': 0,        // Default value
+      'lessons': 0,     // Default value
+      'minutes': 0,     // Default value
+      'streak': 0,      // Default value
+    });
+
+    res = "Success";
+  } catch (e) {
+    Logger.log(e.toString());
+    res = e.toString();
   }
+  return res;
+}
 
-  // Sign up a user with default values for progress in a separate collection
-  Future<String> signUpUser({
-    required String firstname,
-    required String lastname,
-    required String email,
-    required String password,
-    required String age,
-    required String gender,
-  }) async {
-    String res = "Some error occurred";
-    try {
-      // Create a user with email and password
-      UserCredential credential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      String uid = credential.user!.uid;
-
-      // Add user details to Firestore
-      await _firestore.collection('users').doc(uid).set({
-        'firstname': firstname,
-        'lastname': lastname,
-        'email': email,
-        'age': age,
-        'gender': gender,
-        'uid': uid,
-        'date_joined': DateTime.now(),
-      });
-
-      // Add progress details to 'user_progress' collection with default values
-      await _firestore.collection('user_progress').doc(uid).set({
-        'categories': 0,  // Default value
-        'days': 0,        // Default value
-        'lessons': 0,     // Default value
-        'minutes': 0,     // Default value
-        'streak': 0,      // Default value
-      });
-
-      res = "Success";
-    } catch (e) {
-      Logger.log(e.toString());
-      res = e.toString();
-    }
-    return res;
-  }
 
   // Log in a user
   Future<Map<String, dynamic>> signInUser({

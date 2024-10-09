@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:taga_cuyo/src/features/screens/get_started/get_started.dart';
+import 'package:taga_cuyo/src/features/screens/onboarding_screens/get_started/get_started.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/home/home_screen.dart';
 
 

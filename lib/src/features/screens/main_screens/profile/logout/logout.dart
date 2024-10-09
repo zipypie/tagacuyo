@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Import for managing local storage
-import 'package:taga_cuyo/src/features/screens/login/login.dart';
+import 'package:taga_cuyo/src/features/screens/onboarding_screens/login/login.dart';
 // Import LoginScreen
 
 class LogoutScreen extends StatelessWidget {

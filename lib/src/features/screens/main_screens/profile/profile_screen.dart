@@ -1,5 +1,3 @@
-//profile_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
@@ -9,6 +7,7 @@ import 'package:taga_cuyo/src/features/screens/main_screens/profile/logout/logou
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/profile_bloc.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/profile_event.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/profile_state.dart';
+import 'package:taga_cuyo/src/features/screens/main_screens/profile/update_profile/update_profile.dart';
 
 class ProfileScreen extends StatelessWidget {
   final String? uid;
@@ -20,8 +19,7 @@ class ProfileScreen extends StatelessWidget {
     final profileBloc = BlocProvider.of<ProfileBloc>(context);
 
     // Fetch user profile only if state is ProfileLoading or initial state
-    if (profileBloc.state is ProfileLoading ||
-        profileBloc.state is ProfileError) {
+    if (profileBloc.state is ProfileLoading || profileBloc.state is ProfileError) {
       profileBloc.add(FetchUserProfile(uid!));
     }
 
@@ -35,7 +33,7 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeader(state.name, state.dateJoined),
+                  _buildHeader(state.name, state.dateJoined, state.profileImageUrl),
                   _buildProgressSection(
                     context,
                     lessonsProgress: state.lessonsProgress,
@@ -60,7 +58,7 @@ class ProfileScreen extends StatelessWidget {
   }
 
   // Header Section
-  Widget _buildHeader(String name, String dateJoined) {
+  Widget _buildHeader(String name, String dateJoined, String profileImageUrl) {
     return Container(
       height: 100,
       decoration: BoxDecoration(
@@ -77,12 +75,21 @@ class ProfileScreen extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: Color.fromARGB(255, 21, 195, 254),
               ),
-              child: const Center(
-                child: Icon(
-                  Icons.person,
-                  size: 40,
-                  color: AppColors.titleColor,
-                ),
+              child: ClipOval(
+                child: profileImageUrl.isNotEmpty
+                  ? Image.network(
+                      profileImageUrl,
+                      fit: BoxFit.cover,
+                      width: 70,
+                      height: 70,
+                    )
+                  : const Center(
+                      child: Icon(
+                        Icons.person,
+                        size: 40,
+                        color: AppColors.titleColor,
+                      ),
+                    ),
               ),
             ),
             const SizedBox(width: 10),
@@ -114,6 +121,7 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
+
 
   // Progress Section
   Widget _buildProgressSection(BuildContext context,
@@ -259,11 +267,22 @@ class ProfileScreen extends StatelessWidget {
   // Profile Options
   Widget _buildProfileOptions(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
       child: ListView(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         children: [
+          ListTile(
+            leading: const Icon(Icons.person_2_rounded),
+            title: const Text('Profile'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const UpdateProfileScreen()),
+              );
+            },
+          ),
           ListTile(
             leading: const Icon(Icons.lock),
             title: const Text('Magpalit ng Password'),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
 import 'package:taga_cuyo/src/features/constants/logo.dart';
-import 'package:taga_cuyo/src/features/screens/login/login.dart';
+import 'package:taga_cuyo/src/features/screens/onboarding_screens/login/login.dart';
 
 class GetStartedPage extends StatelessWidget {
   final String text;
