@@ -25,3 +25,5 @@ class Subcategory {
     required this.words,
   });
 }
+
+

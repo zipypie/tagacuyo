@@ -5,6 +5,7 @@ import 'package:taga_cuyo/src/features/common_widgets/button.dart';
 import 'package:taga_cuyo/src/features/constants/capitalize.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
+import 'package:taga_cuyo/src/features/screens/main_screens/category/quiz/category_progress.dart';
 import 'package:taga_cuyo/src/features/utils/logger.dart';
 
 class CategoryQuizScreen extends StatefulWidget {
@@ -47,7 +48,6 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     if (dataList.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -61,7 +61,12 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
 
     final data = dataList[_currentWordIndex];
     correctAnswer = data['translated'];
-    options = data['options'];
+    
+    // Shuffle only if options are not set yet
+    if (options.isEmpty) {
+      options = List<dynamic>.from(data['options']);
+      options.shuffle(); // Shuffle only when options are first loaded
+    }
 
     // Calculate the progress as a fraction of total quizzes
     double progress = (_currentWordIndex + 1) / dataList.length;
@@ -118,6 +123,7 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
                           _isAnswered = false;
                           selectedOption = null;
                           cachedImageUrl = null; // Reset image cache
+                          options = []; // Reset options to reshuffle for new word
                         });
                       },
                       text: 'Sunod',
@@ -201,6 +207,33 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
         );
       },
     );
+
+    bool isFinished = await CategoryProgressService().isSubcategoryFinished(
+      userId: widget.userId,
+      categoryId: widget.categoryId,
+      subcategoryId: widget.subcategoryId,
+    );
+
+// If not finished, update user progress
+    if (!isFinished) {
+      await CategoryProgressService().updateUserProgress(
+        userId: widget.userId,
+        categoryId: widget.categoryId,
+        subcategoryId: widget.subcategoryId,
+      );
+    }
+
+    await CategoryProgressService().updateUserProgress(
+      userId: widget.userId,
+      categoryId: widget.categoryId,
+      subcategoryId: widget.subcategoryId,
+    );
+
+    await CategoryProgressService().getUpdatedProgress(
+      userId: widget.userId,
+      categoryId: widget.categoryId,
+      subcategoryId: widget.subcategoryId,
+    );
   }
 
   void handleAnswer(String selectedAnswer) {
@@ -268,7 +301,7 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
           ),
           child: Center(
             child: Text(
-              option,
+              capitalizeFirstLetter(option),
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 20),
             ),

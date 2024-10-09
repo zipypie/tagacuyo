@@ -6,6 +6,7 @@ import 'package:taga_cuyo/src/features/constants/capitalize.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/category/category.dart';
+import 'package:taga_cuyo/src/features/screens/main_screens/category/quiz/category_progress.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/category/quiz/category_quiz.dart';
 import 'package:taga_cuyo/src/features/services/authentication.dart';
 import 'package:taga_cuyo/src/features/utils/logger.dart';
@@ -24,6 +25,7 @@ class _CategoryScreenState extends State<CategoryScreen>
     with AutomaticKeepAliveClientMixin<CategoryScreen> {
   List<Category> categories = [];
   final AuthService _authService = AuthService();
+  final CategoryProgressService _progressService = CategoryProgressService();
   String? userId;
 
   @override
@@ -43,6 +45,14 @@ class _CategoryScreenState extends State<CategoryScreen>
     }
   }
 
+ Future<int> _getCompletedSubcategoriesCount(String categoryId) async {
+    if (userId == null) return 0; // If user is not logged in, return 0
+    List<String> completedSubcategories = await _progressService.getCompletedSubcategories(
+      userId: userId!,
+      categoryId: categoryId,
+    );
+    return completedSubcategories.length;
+  }
   Future<void> fetchCategories() async {
     try {
       CollectionReference collection =
@@ -138,43 +148,51 @@ class _CategoryScreenState extends State<CategoryScreen>
     );
   }
 
-  Widget _categoryCard(Category category) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 1 / 3.61,
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(width: 3, color: Color.fromARGB(255, 96, 96, 96)),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  capitalizeFirstLetter(category.id),
-                  style: const TextStyle(
-                    fontFamily: AppFonts.fcb,
-                    fontSize: 21,
-                  ),
-                ),
-                Text(
-                  '0/${category.subcategories.length}',
-                  style: const TextStyle(
-                    fontFamily: AppFonts.fcr,
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
+   Widget _categoryCard(Category category) {
+    return FutureBuilder<int>(
+      future: _getCompletedSubcategoriesCount(category.id), // Fetch the count
+      builder: (context, snapshot) {
+        int completedCount = snapshot.data ?? 0; // Get the completed count
+        return Container(
+          height: MediaQuery.of(context).size.height * 1 / 3.61,
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                  width: 3, color: Color.fromARGB(255, 96, 96, 96)),
             ),
           ),
-          _subcategoryList(category),
-        ],
-      ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      capitalizeFirstLetter(category.id),
+                      style: const TextStyle(
+                        fontFamily: AppFonts.fcb,
+                        fontSize: 21,
+                      ),
+                    ),
+                    // Update to show completed subcategories
+                    Text(
+                      '$completedCount/${category.subcategories.length}',
+                      style: const TextStyle(
+                        fontFamily: AppFonts.fcr,
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _subcategoryList(category),
+            ],
+          ),
+        );
+      },
     );
   }
 
