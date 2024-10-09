@@ -8,6 +8,7 @@ import 'package:taga_cuyo/src/features/services/auth_wrapper.dart';
 import 'package:taga_cuyo/src/features/services/user_service.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/profile_bloc.dart';
 import 'package:taga_cuyo/src/features/utils/logger.dart';
+import 'package:taga_cuyo/src/features/utils/user_session_manager.dart'; 
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,13 +34,34 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget { // Change to StatefulWidget to manage lifecycle
   const MyApp({super.key});
+
+  @override
+  MyAppState createState() => MyAppState();
+}
+
+class MyAppState extends State<MyApp> {
+  late UserService userService; // UserService instance
+  late UserSessionManager userSessionManager; // UserSessionManager instance
+
+  @override
+  void initState() {
+    super.initState();
+    userService = UserService(); // Instantiate UserService
+    userSessionManager = UserSessionManager(userService); // Instantiate UserSessionManager
+  }
+
+  @override
+  void dispose() {
+    userSessionManager.dispose(); // Dispose the session manager when the app is closed
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return RepositoryProvider(
-      create: (context) => UserService(), // Provide UserService here
+      create: (context) => userService,
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
