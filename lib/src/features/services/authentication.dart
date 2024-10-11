@@ -72,6 +72,7 @@ Future<String> signUpUser({
   required int age, // Now using int for age
   required String gender,
   String? profileImage,
+  String? motherTounge,
 }) async {
   String res = "Some error occurred";
   try {
@@ -93,6 +94,8 @@ Future<String> signUpUser({
       'uid': uid,
       'date_joined': DateTime.now(),
       'profile_image': profileImage ?? '', // Default to empty string if null
+      'mother_tongue': motherTounge ?? '',
+      'hasCompletedSurvey': false, // Always set to false
     });
 
     // Add progress details to 'user_progress' collection with default values
@@ -111,6 +114,8 @@ Future<String> signUpUser({
   }
   return res;
 }
+
+
 
 
   // Log in a user

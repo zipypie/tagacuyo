@@ -1,14 +1,18 @@
-import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:taga_cuyo/src/features/screens/onboarding_screens/dialogSurvey/dialog_survey.dart';
 import 'package:taga_cuyo/src/features/services/auth_wrapper.dart';
+import 'package:taga_cuyo/src/features/services/authentication.dart';
+import 'package:taga_cuyo/src/features/services/day_count.dart';
+import 'package:taga_cuyo/src/features/services/streak_count.dart';
 import 'package:taga_cuyo/src/features/services/user_service.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/profile_bloc.dart';
 import 'package:taga_cuyo/src/features/utils/logger.dart';
-import 'package:taga_cuyo/src/features/utils/user_session_manager.dart'; 
+import 'package:taga_cuyo/src/features/utils/user_session_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +38,7 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget { // Change to StatefulWidget to manage lifecycle
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
@@ -42,19 +46,77 @@ class MyApp extends StatefulWidget { // Change to StatefulWidget to manage lifec
 }
 
 class MyAppState extends State<MyApp> {
-  late UserService userService; // UserService instance
-  late UserSessionManager userSessionManager; // UserSessionManager instance
+  late UserService userService;
+  late UserSessionManager userSessionManager;
+  late StreakCounterService streakCounterService;
+  late AuthService authService;
+  bool _dialogShown = false; // Flag to prevent multiple dialogs
 
   @override
   void initState() {
     super.initState();
-    userService = UserService(); // Instantiate UserService
-    userSessionManager = UserSessionManager(userService); // Instantiate UserSessionManager
+    userService = UserService();
+    userSessionManager = UserSessionManager(userService);
+    DayCounterService dayCounterService = DayCounterService();
+    dayCounterService.updateDayInSession();
+
+    streakCounterService = StreakCounterService();
+    streakCounterService.updateStreak();
+
+    authService = AuthService(); // Initialize AuthService
+
+    _checkAndShowSurveyDialog(); // Check and show dialog
   }
+
+ Future<void> _checkAndShowSurveyDialog() async {
+  String? uid = authService.getUserId(); // Get the user's UID
+
+  if (uid != null) {
+    print("Current User UID: $uid"); // Debug print
+
+    final userData = await authService.getUserData();
+
+    // Debugging information
+    if (userData == null) {
+      print("User data is null");
+      return; // Exit early if userData is null
+    } else {
+      print("User data retrieved: ${userData.data()}");
+    }
+
+    // Check if the user has completed the survey
+    var hasCompletedSurvey = (userData.data() as Map<String, dynamic>)['hasCompletedSurvey'] ?? false;
+
+    if (!hasCompletedSurvey) { // Only show dialog if the survey is not completed
+      if (mounted && !_dialogShown) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return SurveyDialog(
+                uid: uid,
+                onCompleted: () {
+                  _dialogShown = false; // Reset the dialogShown flag after survey is completed
+                },
+              );
+            },
+          );
+          _dialogShown = true; // Ensure the dialog is only shown once
+          print("Showing SurveyDialog for UID: $uid"); // Debug print
+        });
+      }
+    } else {
+      print("Survey already completed.");
+    }
+  } else {
+    print("No user is logged in."); // Handle case where no user is logged in
+  }
+}
+
 
   @override
   void dispose() {
-    userSessionManager.dispose(); // Dispose the session manager when the app is closed
+    userSessionManager.dispose(); // Dispose session manager
     super.dispose();
   }
 

@@ -1,15 +1,21 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
+import 'package:taga_cuyo/src/features/screens/onboarding_screens/dialogSurvey/dialog_survey.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:taga_cuyo/src/features/utils/logger.dart'; // Import Firestore for user data retrieval
 
 class ExplorePage extends StatelessWidget {
   const ExplorePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    _checkSurvey(context); // Check survey on build
+
     return Scaffold(
       appBar: _buildAppBar(),
-      body:  const Padding(
+      body: const Padding(
         padding: EdgeInsets.fromLTRB(20, 20, 0, 0),
         child: SingleChildScrollView(
           child: Column(
@@ -49,6 +55,34 @@ class ExplorePage extends StatelessWidget {
       centerTitle: true,
     );
   }
+
+
+
+void _checkSurvey(BuildContext context) async {
+  String? uid = FirebaseAuth.instance.currentUser?.uid; // Get current user UID
+  if (uid == null) return; // Exit if no user is logged in
+
+  // Fetch user data to check if the survey has been completed
+  DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+  if (snapshot.exists) {
+    Map<String, dynamic>? userData = snapshot.data() as Map<String, dynamic>?;
+    if (userData != null && userData['hasCompletedSurvey'] != true) {
+      // Show the survey dialog if the user hasn't completed it
+      showDialog(
+        context: context,
+        builder: (context) => SurveyDialog(
+          uid: uid,
+          onCompleted: () {
+            // This callback is executed after the survey is completed
+            Logger.log("Survey completed!");
+            // You can also trigger any other functionality you want here
+          },
+        ),
+      );
+    }
+  }
+}
+
 }
 
 class SectionTitle extends StatelessWidget {

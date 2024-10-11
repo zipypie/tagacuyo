@@ -14,76 +14,79 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<FetchUserProfile>(_onFetchUserProfile);
   }
 
- Future<void> _onFetchUserProfile(
-    FetchUserProfile event, Emitter<ProfileState> emit) async {
-  emit(ProfileLoading());
-  try {
-    // Fetch user document
-    final userDoc = await userService.getUserById(event.uid);
-    Logger.log('User document: ${userDoc?.data()}');
+  Future<void> _onFetchUserProfile(
+      FetchUserProfile event, Emitter<ProfileState> emit) async {
+    emit(ProfileLoading());
+    try {
+      // Fetch user document
+      final userDoc = await userService.getUserById(event.uid);
+      Logger.log('User document: ${userDoc?.data()}');
 
-    if (userDoc != null && userDoc.exists) {
-      String firstName = userDoc['firstname'] ?? '';
-      String lastName = userDoc['lastname'] ?? '';
-      String name = '${capitalize(firstName)} ${capitalize(lastName)}';
+      if (userDoc != null && userDoc.exists) {
+        String firstName = userDoc['firstname'] ?? '';
+        String lastName = userDoc['lastname'] ?? '';
+        String name = '${capitalize(firstName)} ${capitalize(lastName)}';
 
-      // Fetch date joined from Firestore
-      Timestamp joinedTimestamp = userDoc['date_joined'] ?? Timestamp.now();
-      String dateJoined = joinedTimestamp.toDate().toLocal().toString().split(' ')[0];
+        // Fetch date joined from Firestore
+        Timestamp joinedTimestamp = userDoc['date_joined'] ?? Timestamp.now();
+        String dateJoined =
+            joinedTimestamp.toDate().toLocal().toString().split(' ')[0];
 
-      // Fetch profile image URL
-      String profileImageUrl = userDoc['profile_image'] ?? ''; // Add this line
+        // Fetch profile image URL
+        String profileImageUrl =
+            userDoc['profile_image'] ?? ''; // Add this line
 
-      // Reference to the user progress document
-      final progressDocRef = FirebaseFirestore.instance
-          .collection('user_progress')
-          .doc(event.uid);
+        // Reference to the user progress document
+        final progressDocRef = FirebaseFirestore.instance
+            .collection('user_progress')
+            .doc(event.uid);
 
-      // Fetch user progress document
-      final progressDoc = await progressDocRef.get();
+        // Fetch user progress document
+        final progressDoc = await progressDocRef.get();
 
-      if (!progressDoc.exists) {
-        // If progress document doesn't exist, create it with default values
-        await progressDocRef.set({
-          'lessons': 0,
-          'categories': 0,
-          'minutes': 0,
-          'days': 0,
-          'streak': 0,
-        });
-        Logger.log("Created new progress document for user: ${event.uid}");
+        if (!progressDoc.exists) {
+          // If progress document doesn't exist, create it with default values
+          await progressDocRef.set({
+            'lessons': 0,
+            'categories': 0,
+            'minutes': 0,
+            'days': 0,
+            'streak': 0,
+            'longest_streak': 0,
+          });
+          Logger.log("Created new progress document for user: ${event.uid}");
+        }
+
+        // Fetch the progress document again after creation
+        final updatedProgressDoc = await progressDocRef.get();
+
+        // Extract progress data
+        int lessonsProgress = updatedProgressDoc['lessons'] ?? 0;
+        int categoriesProgress = updatedProgressDoc['categories'] ?? 0;
+        int minutesProgress = updatedProgressDoc['minutes'] ?? 0;
+        int daysProgress = updatedProgressDoc['days'] ?? 0;
+        int streakProgress = updatedProgressDoc['streak'] ?? 0;
+        int longestStreakProgress = updatedProgressDoc['longest_streak'] ?? 0;
+
+        // Emit ProfileLoaded with both user and progress data
+        emit(ProfileLoaded(
+          name: name,
+          dateJoined: dateJoined,
+          profileImageUrl: profileImageUrl, // Now defined and used correctly
+          lessonsProgress: lessonsProgress,
+          categoriesProgress: categoriesProgress,
+          minutesProgress: minutesProgress,
+          daysProgress: daysProgress,
+          streakProgress: streakProgress,
+          longestStreakProgress: longestStreakProgress
+        ));
+      } else {
+        emit(ProfileError("User not found"));
       }
-
-      // Fetch the progress document again after creation
-      final updatedProgressDoc = await progressDocRef.get();
-
-      // Extract progress data
-      int lessonsProgress = updatedProgressDoc['lessons'] ?? 0;
-      int categoriesProgress = updatedProgressDoc['categories'] ?? 0;
-      int minutesProgress = updatedProgressDoc['minutes'] ?? 0;
-      int daysProgress = updatedProgressDoc['days'] ?? 0;
-      int streakProgress = updatedProgressDoc['streak'] ?? 0;
-
-      // Emit ProfileLoaded with both user and progress data
-      emit(ProfileLoaded(
-        name: name,
-        dateJoined: dateJoined,
-        profileImageUrl: profileImageUrl, // Now defined and used correctly
-        lessonsProgress: lessonsProgress,
-        categoriesProgress: categoriesProgress,
-        minutesProgress: minutesProgress,
-        daysProgress: daysProgress,
-        streakProgress: streakProgress,
-      ));
-    } else {
-      emit(ProfileError("User not found"));
+    } catch (e) {
+      emit(ProfileError("Failed to fetch user data: ${e.toString()}"));
     }
-  } catch (e) {
-    emit(ProfileError("Failed to fetch user data: ${e.toString()}"));
   }
-}
-
-
 
   String capitalize(String input) {
     if (input.isEmpty) return '';

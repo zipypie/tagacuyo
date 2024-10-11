@@ -41,6 +41,7 @@ class ProfileScreen extends StatelessWidget {
                     minutesProgress: state.minutesProgress,
                     daysProgress: state.daysProgress,
                     streakProgress: state.streakProgress,
+                    longestStreakProgress: state.longestStreakProgress,
                   ),
                   const SizedBox(height: 20),
                   _buildProfileOptions(context),
@@ -129,7 +130,9 @@ class ProfileScreen extends StatelessWidget {
       required int categoriesProgress,
       required int minutesProgress,
       required int daysProgress,
-      required int streakProgress}) {
+      required int streakProgress,
+      required int longestStreakProgress,
+      }) {
     final halfScreenWidth = MediaQuery.of(context).size.width * 0.4;
 
     return Container(
@@ -200,9 +203,17 @@ class ProfileScreen extends StatelessWidget {
                   context: context,
                   icon: Image.asset('assets/icons/progress_6.png',
                       width: 30, height: 30),
-                  label: 'Sunod sunod na araw',
+                  label: 'Streak',
                   value: streakProgress.toString(),
-                  maxWidth: halfScreenWidth * 1.4,
+                  maxWidth: halfScreenWidth,
+                ),
+                                _buildProgressItem(
+                  context: context,
+                  icon: Image.asset('assets/icons/progress_6.png',
+                      width: 30, height: 30),
+                  label: 'Longest Streak',
+                  value: longestStreakProgress.toString(),
+                  maxWidth: halfScreenWidth,
                 ),
               ],
             ),

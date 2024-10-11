@@ -28,17 +28,17 @@ class _HomeScreenState extends State<HomeScreen> {
   // List of pages/icons that correspond to each tab in the bottom navigation bar
   static final List<Widget> _widgetOptions = <Widget>[
     const ExplorePage(),
+    TranslatorScreen(),
     const LessonScreenPage(),
     const CategoryScreen(),
-    TranslatorScreen(),
   ];
 
   // List of titles corresponding to each page
   static final List<String> _titles = <String>[
     'Home',
+    'Tagasalin',
     'Aralin',
     'Kategorya',
-    'Tagasalin',
     'Profile',
   ];
 
@@ -55,7 +55,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Scaffold(
-      appBar: AppBarScreen(title: _titles[_selectedIndex]), // Pass the title based on the selected index
+      appBar: AppBarScreen(
+          title: _titles[
+              _selectedIndex]), // Pass the title based on the selected index
       body: Stack(
         children: [
           pagesWithProfile.elementAt(_selectedIndex), // Use modified list

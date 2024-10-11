@@ -19,6 +19,7 @@ class ProfileLoaded extends ProfileState {
   final int minutesProgress;
   final int daysProgress;
   final int streakProgress;
+  final int longestStreakProgress;
 
   ProfileLoaded({
     required this.name,
@@ -29,6 +30,7 @@ class ProfileLoaded extends ProfileState {
     required this.minutesProgress,
     required this.daysProgress,
     required this.streakProgress,
+    required this.longestStreakProgress,
   });
 
   @override
@@ -39,7 +41,8 @@ class ProfileLoaded extends ProfileState {
         categoriesProgress,
         minutesProgress,
         daysProgress,
-        streakProgress
+        streakProgress,
+        longestStreakProgress
       ];
 }
 
