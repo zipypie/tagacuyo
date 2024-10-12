@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:taga_cuyo/src/features/common_widgets/loading%20animation/category_loading.dart';
+import 'package:taga_cuyo/src/features/common_widgets/loading_animation/category_loading.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/category/category.dart';
 import 'package:taga_cuyo/src/features/services/category_service.dart';
 import 'package:taga_cuyo/src/features/constants/capitalize.dart';

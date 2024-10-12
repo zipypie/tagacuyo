@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:taga_cuyo/src/features/common_widgets/loading_animation/profile_loading.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/account/change_password_page.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/feedback/feedback.dart';
@@ -27,7 +28,7 @@ class ProfileScreen extends StatelessWidget {
       body: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           if (state is ProfileLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const ProfileLoadingShimmer(); 
           } else if (state is ProfileLoaded) {
             return SingleChildScrollView(
               child: Column(

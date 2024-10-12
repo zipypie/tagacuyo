@@ -16,7 +16,7 @@ class LessonQuizScreen extends StatefulWidget {
   const LessonQuizScreen({
     super.key,
     required this.lessonName,
-    required this.documentId,
+    required this.documentId, required imagePath,
   });
 
   @override
