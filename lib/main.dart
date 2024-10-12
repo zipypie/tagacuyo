@@ -72,16 +72,16 @@ class MyAppState extends State<MyApp> {
   String? uid = authService.getUserId(); // Get the user's UID
 
   if (uid != null) {
-    print("Current User UID: $uid"); // Debug print
+    Logger.log("Current User UID: $uid"); // Debug Logger.log
 
     final userData = await authService.getUserData();
 
     // Debugging information
     if (userData == null) {
-      print("User data is null");
+      Logger.log("User data is null");
       return; // Exit early if userData is null
     } else {
-      print("User data retrieved: ${userData.data()}");
+      Logger.log("User data retrieved: ${userData.data()}");
     }
 
     // Check if the user has completed the survey
@@ -102,14 +102,14 @@ class MyAppState extends State<MyApp> {
             },
           );
           _dialogShown = true; // Ensure the dialog is only shown once
-          print("Showing SurveyDialog for UID: $uid"); // Debug print
+          Logger.log("Showing SurveyDialog for UID: $uid"); // Debug Logger.log
         });
       }
     } else {
-      print("Survey already completed.");
+      Logger.log("Survey already completed.");
     }
   } else {
-    print("No user is logged in."); // Handle case where no user is logged in
+    Logger.log("No user is logged in."); // Handle case where no user is logged in
   }
 }
 

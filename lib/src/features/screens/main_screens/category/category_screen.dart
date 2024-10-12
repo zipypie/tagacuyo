@@ -1,18 +1,12 @@
-// screens/category_screen.dart
-
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:taga_cuyo/src/features/common_widgets/loading%20animation/category_loading.dart';
+import 'package:taga_cuyo/src/features/screens/main_screens/category/category.dart';
+import 'package:taga_cuyo/src/features/services/category_service.dart';
 import 'package:taga_cuyo/src/features/constants/capitalize.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
-import 'package:taga_cuyo/src/features/screens/main_screens/category/category.dart';
-import 'package:taga_cuyo/src/features/screens/main_screens/category/quiz/category_progress.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/category/quiz/category_quiz.dart';
-import 'package:taga_cuyo/src/features/services/authentication.dart';
 import 'package:taga_cuyo/src/features/utils/logger.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-
-const String categoriesCollection = 'categories';
 
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});
@@ -24,9 +18,9 @@ class CategoryScreen extends StatefulWidget {
 class _CategoryScreenState extends State<CategoryScreen>
     with AutomaticKeepAliveClientMixin<CategoryScreen> {
   List<Category> categories = [];
-  final AuthService _authService = AuthService();
-  final CategoryProgressService _progressService = CategoryProgressService();
+  final CategoryService _categoryService = CategoryService();
   String? userId;
+  bool isLoading = true; // Loading state
 
   @override
   void initState() {
@@ -39,105 +33,37 @@ class _CategoryScreenState extends State<CategoryScreen>
   bool get wantKeepAlive => true;
 
   Future<void> fetchCurrentUserId() async {
-    userId = _authService.getUserId();
+    userId = await _categoryService.fetchCurrentUserId();
     if (userId == null) {
       Logger.log("User is not logged in");
     }
   }
 
- Future<int> _getCompletedSubcategoriesCount(String categoryId) async {
-    if (userId == null) return 0; // If user is not logged in, return 0
-    List<String> completedSubcategories = await _progressService.getCompletedSubcategories(
-      userId: userId!,
-      categoryId: categoryId,
-    );
-    return completedSubcategories.length;
-  }
   Future<void> fetchCategories() async {
     try {
-      CollectionReference collection =
-          FirebaseFirestore.instance.collection(categoriesCollection);
-      QuerySnapshot querySnapshot = await collection.get();
-
-      List<Category> fetchedCategories = [];
-
-      for (var doc in querySnapshot.docs) {
-        String id = doc.id;
-        String imagePath =
-            (doc.data() as Map<String, dynamic>?)?['image_path'] ?? '';
-        String imageUrl = await fetchImageFromStorage(imagePath);
-        List<Subcategory> subcategories = await fetchSubcategories(id);
-
-        Logger.log(
-            "Fetched category: $id with ${subcategories.length} subcategories");
-
-        fetchedCategories.add(
-          Category(
-            id: id,
-            imagePath: imageUrl,
-            subcategories: subcategories,
-          ),
-        );
-      }
-
+      List<Category> fetchedCategories = await _categoryService.fetchCategories();
       setState(() {
         categories = fetchedCategories;
+        isLoading = false; // Data loaded, stop loading
       });
     } catch (e) {
       Logger.log("Error fetching categories: $e");
+      setState(() {
+        isLoading = false; // In case of an error, stop loading
+      });
     }
   }
 
-  Future<String> fetchImageFromStorage(String imagePath) async {
-    try {
-      Reference imageRef = FirebaseStorage.instance.refFromURL(imagePath);
-      return await imageRef.getDownloadURL();
-    } catch (e) {
-      Logger.log("Error fetching image from storage: $e");
-      return '';
-    }
-  }
+ @override
+Widget build(BuildContext context) {
+  super.build(context);
+  return Scaffold(
+    body: isLoading
+        ? const LoadingShimmerCategory() // Custom loading shimmer
+        : _categoryContainer(categories),
+  );
+}
 
-  Future<List<Subcategory>> fetchSubcategories(String categoryId) async {
-    List<Subcategory> subcategories = [];
-    try {
-      CollectionReference subcollection = FirebaseFirestore.instance
-          .collection(categoriesCollection)
-          .doc(categoryId)
-          .collection('subcategories');
-      QuerySnapshot subcollectionSnapshot = await subcollection.get();
-
-      for (var subDoc in subcollectionSnapshot.docs) {
-        String subcategoryId = subDoc.id;
-        Map<String, dynamic> data = subDoc.data() as Map<String, dynamic>;
-
-        String imagePath = (data['image_path'] ?? '');
-        String imageUrl = await fetchImageFromStorage(imagePath);
-        String name = data['subcategory_name'] ?? '';
-        List<String> words = List<String>.from(data['words'] ?? []);
-
-        subcategories.add(
-          Subcategory(
-            id: subcategoryId,
-            name: name,
-            imagePath: imageUrl,
-            words: words,
-          ),
-        );
-      }
-    } catch (e) {
-      Logger.log("Error fetching subcategories: $e");
-    }
-    return subcategories;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    return Scaffold(
-      body: _categoryContainer(categories),
-    );
-  }
 
   Widget _categoryContainer(List<Category> categories) {
     return ListView.builder(
@@ -148,9 +74,9 @@ class _CategoryScreenState extends State<CategoryScreen>
     );
   }
 
-   Widget _categoryCard(Category category) {
+  Widget _categoryCard(Category category) {
     return FutureBuilder<int>(
-      future: _getCompletedSubcategoriesCount(category.id), // Fetch the count
+      future: _categoryService.getCompletedSubcategoriesCount(userId!, category.id), // Fetch the count
       builder: (context, snapshot) {
         int completedCount = snapshot.data ?? 0; // Get the completed count
         return Container(
@@ -176,7 +102,6 @@ class _CategoryScreenState extends State<CategoryScreen>
                         fontSize: 21,
                       ),
                     ),
-                    // Update to show completed subcategories
                     Text(
                       '$completedCount/${category.subcategories.length}',
                       style: const TextStyle(

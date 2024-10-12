@@ -52,7 +52,7 @@ class SubcategoryCard extends StatelessWidget {
                   subcategory.imagePath,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
-                    return const Center(child: Text('Image not available'));
+                    return const Center(child: Text('Walang Imahe'));
                   },
                 ),
               ),

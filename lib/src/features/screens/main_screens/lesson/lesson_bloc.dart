@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:taga_cuyo/src/features/services/authentication.dart';
+import 'package:taga_cuyo/src/features/utils/logger.dart';
 import 'lesson_event.dart';
 import 'lesson_state.dart';
 
@@ -32,6 +34,18 @@ class LessonBloc {
       }
     }
   }
+
+  Future<String> fetchImageFromStorage(String imagePath) async {
+  try {
+    if (imagePath.isEmpty) return ''; // Avoid unnecessary fetches
+    Reference imageRef = FirebaseStorage.instance.refFromURL(imagePath);
+    return await imageRef.getDownloadURL();
+  } catch (e) {
+    Logger.log("Error fetching image from storage: $e");
+    return ''; // Return empty string in case of error
+  }
+}
+
 
   // Fetch lessons and emit states
   Future<void> _fetchLessons(String userId) async {

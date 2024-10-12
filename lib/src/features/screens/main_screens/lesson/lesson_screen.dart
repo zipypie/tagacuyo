@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:taga_cuyo/src/features/common_widgets/loading%20animation/lesson_loading.dart';
 import 'package:taga_cuyo/src/features/constants/capitalize.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/lesson/quiz/quiz.dart';
 import 'package:taga_cuyo/src/features/services/authentication.dart';
@@ -46,8 +47,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
         if (userProgressDoc.exists) {
           setState(() {
             lessonProgress =
-                (userProgressDoc.data() as Map<String, dynamic>?)?['lessons'] ??
-                    0;
+                (userProgressDoc.data() as Map<String, dynamic>?)?['lessons'] ?? 0;
           });
         }
 
@@ -85,7 +85,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
               stream: _lessonBloc.stateStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return lessonShimmerLoading(); // Show shimmer loading when waiting
                 }
 
                 if (snapshot.hasError) {
@@ -175,7 +175,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
                 ),
               ),
             ),
-            const SizedBox(
+const SizedBox(
               child: CustomImage(
                 src: 'assets/images/monkey.png',
                 width: 100, // Fixed width for the image
@@ -199,8 +199,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
           context,
           MaterialPageRoute(
             builder: (context) => LessonQuizScreen(
-              lessonName: lesson['lesson_name'] ??
-                  'Unknown Lesson', // Pass lesson_name safely
+              lessonName: lesson['lesson_name'] ?? 'Unknown Lesson', // Pass lesson_name safely
               documentId: lesson['id'] ?? '', // Pass lesson ID safely
             ),
           ),
@@ -239,21 +238,31 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
                           color: Color.fromARGB(255, 73, 109, 126), // Use a color if needed
                         ),
               ),
-              const CustomImage(
-                src: 'assets/images/monkey.png',
-                width: 70,
-                height: 70,
+              FutureBuilder<String>(
+                future: _lessonBloc.fetchImageFromStorage(lesson['image_path'] ?? ''), // Pass image path dynamically
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator(); // Loading state for image
+                  }
+
+                  if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Icon(Icons.error, size: 70); // Show error icon if image fetch fails
+                  }
+                  return Image.network(
+                    snapshot.data!,
+                    width: 70,
+                    height: 70,
+                  );
+                },
               ),
               Text(
                 capitalizeFirstLetter(lesson['lesson_name']), // Display lesson name safely
                 style: const TextStyle(
-                          fontFamily: AppFonts
-                              .fcr, // Ensure this font is defined in your pubspec.yaml
-                          fontSize:
-                              16, // You can adjust the font size as needed
-                          color: AppColors.titleColor, // Use a color if needed
-                        ),
-                textAlign: TextAlign.center,
+                  
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.titleColor),
+                textAlign: TextAlign.center, // Center the text
               ),
             ],
           ),

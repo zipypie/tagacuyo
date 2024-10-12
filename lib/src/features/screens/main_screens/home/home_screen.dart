@@ -25,6 +25,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
+  // Create a PageController to control the PageView
+  final PageController _pageController = PageController(
+    initialPage: 0, 
+    viewportFraction: 1.0, // Keeps the pages fully visible for smoother transitions
+  );
+
   // List of pages/icons that correspond to each tab in the bottom navigation bar
   static final List<Widget> _widgetOptions = <Widget>[
     const ExplorePage(),
@@ -48,20 +54,29 @@ class _HomeScreenState extends State<HomeScreen> {
     final List<Widget> pagesWithProfile = List.from(_widgetOptions)
       ..add(ProfileScreen(uid: widget.uid)); // Add ProfileScreenPage
 
+    // Function to handle tab change
     void onItemTapped(int index) {
       setState(() {
         _selectedIndex = index;
       });
+      // Animate the page change with a different curve (fastOutSlowIn)
+      _pageController.animateToPage(index, 
+        duration: const Duration(milliseconds: 450), // Adjust for smoothness
+        curve: Curves.fastOutSlowIn, // Use fastOutSlowIn for a more natural feel
+      );
     }
 
     return Scaffold(
-      appBar: AppBarScreen(
-          title: _titles[
-              _selectedIndex]), // Pass the title based on the selected index
-      body: Stack(
-        children: [
-          pagesWithProfile.elementAt(_selectedIndex), // Use modified list
-        ],
+      appBar: AppBarScreen(title: _titles[_selectedIndex]), // Pass the title based on the selected index
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        physics: const NeverScrollableScrollPhysics(), // Disable swipe gestures
+        children: pagesWithProfile,
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
         onItemTapped: onItemTapped,

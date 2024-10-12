@@ -5,7 +5,7 @@ import 'package:taga_cuyo/src/features/common_widgets/button.dart';
 import 'package:taga_cuyo/src/features/constants/capitalize.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
-import 'package:taga_cuyo/src/features/screens/main_screens/category/quiz/category_progress.dart';
+import 'package:taga_cuyo/src/features/services/category_service.dart';
 import 'package:taga_cuyo/src/features/utils/logger.dart';
 
 class CategoryQuizScreen extends StatefulWidget {
@@ -36,6 +36,8 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
   String? selectedOption;
   int _currentWordIndex = 0;
   List<Map<String, dynamic>> dataList = [];
+
+  final CategoryService _categoryService = CategoryService(); 
 
   // Add a variable to cache the image URL
   String? cachedImageUrl;
@@ -208,7 +210,7 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
       },
     );
 
-    bool isFinished = await CategoryProgressService().isSubcategoryFinished(
+    bool isFinished = await _categoryService.isSubcategoryFinished(
       userId: widget.userId,
       categoryId: widget.categoryId,
       subcategoryId: widget.subcategoryId,
@@ -216,24 +218,20 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
 
 // If not finished, update user progress
     if (!isFinished) {
-      await CategoryProgressService().updateUserProgress(
+      await _categoryService.updateUserProgress(
         userId: widget.userId,
         categoryId: widget.categoryId,
         subcategoryId: widget.subcategoryId,
       );
     }
 
-    await CategoryProgressService().updateUserProgress(
+    await _categoryService.updateUserProgress(
       userId: widget.userId,
       categoryId: widget.categoryId,
       subcategoryId: widget.subcategoryId,
     );
 
-    await CategoryProgressService().getUpdatedProgress(
-      userId: widget.userId,
-      categoryId: widget.categoryId,
-      subcategoryId: widget.subcategoryId,
-    );
+
   }
 
   void handleAnswer(String selectedAnswer) {

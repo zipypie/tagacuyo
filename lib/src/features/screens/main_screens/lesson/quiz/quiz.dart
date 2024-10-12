@@ -6,7 +6,7 @@ import 'package:taga_cuyo/src/features/constants/capitalize.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
 import 'package:taga_cuyo/src/features/services/authentication.dart';
-import 'package:taga_cuyo/src/features/services/progress_service.dart';
+import 'package:taga_cuyo/src/features/services/lesson_service.dart';
 import 'package:taga_cuyo/src/features/utils/logger.dart';
 
 class LessonQuizScreen extends StatefulWidget {
