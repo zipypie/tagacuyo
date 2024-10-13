@@ -47,6 +47,7 @@ dependencies:
   hive_generator: ^2.0.1
   shimmer: ^3.0.0
   flutter_cache_manager: ^3.4.1
+  sqflite: ^2.4.0
 
 dev_dependencies:
   flutter_test:

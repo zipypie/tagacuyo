@@ -11,18 +11,17 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17 // Use Java 17
+        targetCompatibility = JavaVersion.VERSION_17 // Use Java 17
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        jvmTarget = "17" // Java 17 JVM target as string
     }
 
     defaultConfig {
         applicationId = "com.example.taga_cuyo"
-        // Set minSdkVersion directly
-        minSdk = 23 // Change this line
+        minSdk = 23 // Your desired minimum SDK version
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
