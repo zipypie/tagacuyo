@@ -75,7 +75,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -191,104 +191,85 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
   }
 
   // Lesson List Item with Navigation
-  Widget _lessonListItem(BuildContext context, Map<String, dynamic> lesson) {
-    double containerWidth = MediaQuery.of(context).size.width / 2 - 37;
+ // Lesson List Item with Navigation
+Widget _lessonListItem(BuildContext context, Map<String, dynamic> lesson) {
+  double containerWidth = MediaQuery.of(context).size.width / 2 - 37; // Half of screen width minus margin
 
-    return GestureDetector(
-      onTap: () {
-        // Navigate to quiz screen with the lesson data
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => LessonQuizScreen(
-              lessonName: lesson['lesson_name'] ?? 'Unknown Lesson',
-              documentId: lesson['id'] ?? '',
-              imagePath:
-                  lesson['image_path'] ?? '', // Pass the correct image_path
-            ),
+  return GestureDetector(
+    onTap: () {
+      // Navigate to quiz screen with the lesson data
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LessonQuizScreen(
+            lessonName: lesson['lesson_name'] ?? 'Unknown Lesson',
+            documentId: lesson['id'] ?? '',
+            imagePath: lesson['image_path'] ?? '', // Pass the correct image_path
           ),
-        );
-      },
-      child: Container(
-        width: containerWidth,
-        height: containerWidth*1.21, // Calculate half width minus margin
-        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
-        decoration: BoxDecoration(
-          color: AppColors.primaryBackground,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: const Offset(0, 2),
+        ),
+      );
+    },
+    child: Container(
+      width: containerWidth,
+      height: containerWidth, // Set height equal to width for a square
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
+      decoration: BoxDecoration(
+        color: AppColors.secondaryBackground,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB( 10 , 8 , 10 , 8 ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              '${lesson['id']}', // Use lesson id for the lesson number
+              style: const TextStyle(
+                fontFamily: AppFonts.fcr,
+                fontSize: 16,
+                color: Color.fromARGB(255, 73, 109, 126),
+              ),
+            ),
+            FutureBuilder<String>(
+              future: _lessonBloc.fetchImageFromStorage(lesson['image_path'] ?? ''), // Use image_path directly
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator(); // Loading state for image
+                }
+
+                if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Icon(Icons.error, size: 60); // Show error icon if image fetch fails
+                }
+                return Image.network(
+                  snapshot.data!,
+                  width: 70, // Adjust image size as needed
+                  height: 70, // Adjust image size as needed
+                );
+              },
+            ),
+            Text(
+              capitalizeFirstLetter(lesson['lesson_name']), // Display lesson name safely
+              style: const TextStyle(
+                fontSize: 18,
+                fontFamily: AppFonts.fcr,
+                color: AppColors.titleColor,
+              ),
+              textAlign: TextAlign.center, // Center the text
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                '${lesson['id']}', // Use lesson id for the lesson number
-                style: const TextStyle(
-                  fontFamily: AppFonts.fcr,
-                  fontSize: 16,
-                  color: Color.fromARGB(255, 73, 109, 126),
-                ),
-              ),
-              Container(
-                // decoration: BoxDecoration(
-                //   color: AppColors
-                //       .primaryBackground, // Use accent color for the background
-                //   borderRadius:
-                //       BorderRadius.circular(15), // Apply rounded corners
-                //   boxShadow: [
-                //     BoxShadow(
-                //       color: Colors.black.withOpacity(0.2),
-                //       spreadRadius: 2,
-                //       blurRadius: 1,
-                //       offset: const Offset(0, 2),
-                //     ),
-                //   ],
-                // ),
-                child: FutureBuilder<String>(
-                  future: _lessonBloc.fetchImageFromStorage(
-                      lesson['image_path'] ?? ''), // Use image_path directly
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const CircularProgressIndicator(); // Loading state for image
-                    }
-          
-                    if (snapshot.hasError ||
-                        !snapshot.hasData ||
-                        snapshot.data!.isEmpty) {
-                      return const Icon(Icons.error,
-                          size: 120); // Show error icon if image fetch fails
-                    }
-                    return Image.network(
-                      snapshot.data!,
-                      width: 120,
-                      height: 120,
-                    );
-                  },
-                ),
-              ),
-              Text(
-                capitalizeFirstLetter(
-                    lesson['lesson_name']), // Display lesson name safely
-                style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.titleColor),
-                textAlign: TextAlign.center, // Center the text
-              ),
-            ],
-          ),
-        ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 }

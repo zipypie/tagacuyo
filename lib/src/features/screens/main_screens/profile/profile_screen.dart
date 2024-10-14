@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart'; // Import the intl package
 import 'package:taga_cuyo/src/features/common_widgets/loading_animation/profile_loading.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
-import 'package:taga_cuyo/src/features/screens/main_screens/profile/account/change_password_page.dart';
-import 'package:taga_cuyo/src/features/screens/main_screens/profile/feedback/feedback.dart';
-import 'package:taga_cuyo/src/features/screens/main_screens/profile/logout/logout.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/profile_bloc.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/profile_event.dart';
+import 'package:taga_cuyo/src/features/screens/main_screens/profile/profile_options.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/profile_state.dart';
-import 'package:taga_cuyo/src/features/screens/main_screens/profile/update_profile/update_profile.dart';
 
 class ProfileScreen extends StatelessWidget {
   final String? uid;
@@ -28,25 +26,29 @@ class ProfileScreen extends StatelessWidget {
       body: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           if (state is ProfileLoading) {
-            return const ProfileLoadingShimmer(); 
+            return const ProfileLoadingShimmer();
           } else if (state is ProfileLoaded) {
             return SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(state.name, state.dateJoined, state.profileImageUrl),
-                  _buildProgressSection(
-                    context,
-                    lessonsProgress: state.lessonsProgress,
-                    categoriesProgress: state.categoriesProgress,
-                    minutesProgress: state.minutesProgress,
-                    daysProgress: state.daysProgress,
-                    streakProgress: state.streakProgress,
-                    longestStreakProgress: state.longestStreakProgress,
-                  ),
-                  const SizedBox(height: 20),
-                  _buildProfileOptions(context),
-                ],
+              child: Container(
+                color: AppColors.primaryBackground.withOpacity(0.2),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(state.name, state.dateJoined, state.profileImageUrl),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: _buildProgressSection(
+                        context,
+                        lessonsProgress: state.lessonsProgress,
+                        categoriesProgress: state.categoriesProgress,
+                        minutesProgress: state.minutesProgress,
+                        daysProgress: state.daysProgress,
+                        streakProgress: state.streakProgress,
+                        longestStreakProgress: state.longestStreakProgress,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           } else if (state is ProfileError) {
@@ -61,37 +63,59 @@ class ProfileScreen extends StatelessWidget {
 
   // Header Section
   Widget _buildHeader(String name, String dateJoined, String profileImageUrl) {
+    // Parse the dateJoined string to DateTime
+    DateTime dateTime = DateTime.parse(dateJoined); // Assuming dateJoined is in ISO format
+    String formattedDate = DateFormat('MMMM d, y').format(dateTime); // Format the date
+
     return Container(
-      height: 100,
+      height: 120,
       decoration: BoxDecoration(
-        color: Colors.lightBlue[100],
+        color: AppColors.primaryBackground,
+        border: const Border(
+          bottom: BorderSide(
+            color: Colors.black,
+            width: 0.1, // Bottom border thickness
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25), // Shadow color with opacity
+            offset: const Offset(0, 2), // Horizontal and vertical shadow offset
+            blurRadius: 4.0, // How blurry the shadow should be
+            spreadRadius: 0.0, // How much the shadow should spread
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.only(left: 20.0),
         child: Row(
           children: [
             Container(
-              width: 70,
-              height: 70,
-              decoration: const BoxDecoration(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Color.fromARGB(255, 21, 195, 254),
+                border: Border.all(
+                  // Add this part for the border
+                  color: AppColors.primary, // Set your desired border color
+                  width: 5.0, // Set the thickness of the border
+                ),
               ),
               child: ClipOval(
                 child: profileImageUrl.isNotEmpty
-                  ? Image.network(
-                      profileImageUrl,
-                      fit: BoxFit.cover,
-                      width: 70,
-                      height: 70,
-                    )
-                  : const Center(
-                      child: Icon(
-                        Icons.person,
-                        size: 40,
-                        color: AppColors.titleColor,
+                    ? Image.network(
+                        profileImageUrl,
+                        fit: BoxFit.cover,
+                        width: 70,
+                        height: 70,
+                      )
+                    : const Center(
+                        child: Icon(
+                          Icons.person,
+                          size: 40,
+                          color: AppColors.titleColor,
+                        ),
                       ),
-                    ),
               ),
             ),
             const SizedBox(width: 10),
@@ -103,123 +127,121 @@ class ProfileScreen extends StatelessWidget {
                   Text(
                     name,
                     style: const TextStyle(
-                      fontSize: 22,
+                      fontSize: 21,
                       fontWeight: FontWeight.bold,
                       color: AppColors.titleColor,
                     ),
                   ),
                   Text(
-                    'Sumali noong: $dateJoined',
+                    'Sumali noong: $formattedDate', // Use the formatted date
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       color: Colors.grey,
                     ),
                   ),
                 ],
               ),
             ),
+            const Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.fromLTRB(0, 25, 25, 25),
+                  child: ProfileOptions(),
+                )
+              ],
+            )
           ],
         ),
       ),
     );
   }
 
+  // The rest of your ProfileScreen class remains unchanged.
+
 
   // Progress Section
-  Widget _buildProgressSection(BuildContext context,
-      {required int lessonsProgress,
-      required int categoriesProgress,
-      required int minutesProgress,
-      required int daysProgress,
-      required int streakProgress,
-      required int longestStreakProgress,
-      }) {
-    final halfScreenWidth = MediaQuery.of(context).size.width * 0.4;
+  Widget _buildProgressSection(
+    BuildContext context, {
+    required int lessonsProgress,
+    required int categoriesProgress,
+    required int minutesProgress,
+    required int daysProgress,
+    required int streakProgress,
+    required int longestStreakProgress,
+  }) {
+    final halfScreenWidth = MediaQuery.of(context).size.width * 0.9;
+    const double progressIconSize = 40.0; // Define image size once
 
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: Color.fromARGB(255, 80, 93, 100), 
-            width: 1, 
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(35, 30, 35, 30),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Iyong Progresso',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.titleColor,
+            ),
           ),
-           top: BorderSide(
-            color: Color.fromARGB(255, 80, 93, 100), 
-            width: 1,
-          ),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(30, 30, 30, 50),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Iyong Progresso',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.titleColor,
+          const SizedBox(height: 20),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 20,
+            runSpacing: 15,
+            children: [
+              _buildProgressItem(
+                context: context,
+                icon: Image.asset('assets/icons/progress_1.png',
+                    width: progressIconSize, height: progressIconSize),
+                label: 'Natapos na Aralin',
+                value: lessonsProgress.toString(),
+                maxWidth: halfScreenWidth,
               ),
-            ),
-            const SizedBox(height: 20),
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 20,
-              runSpacing: 15,
-              children: [
-                _buildProgressItem(
-                  context: context,
-                  icon: Image.asset('assets/icons/progress_2.png',
-                      width: 30, height: 30),
-                  label: 'Aralin',
-                  value: lessonsProgress.toString(),
-                  maxWidth: halfScreenWidth,
-                ),
-                _buildProgressItem(
-                  context: context,
-                  icon: Image.asset('assets/icons/progress_3.png',
-                      width: 30, height: 30),
-                  label: 'Kategorya',
-                  value: categoriesProgress.toString(),
-                  maxWidth: halfScreenWidth,
-                ),
-                _buildProgressItem(
-                  context: context,
-                  icon: Image.asset('assets/icons/progress_4.png',
-                      width: 30, height: 30),
-                  label: 'Minuto',
-                  value: minutesProgress.toString(),
-                  maxWidth: halfScreenWidth,
-                ),
-                _buildProgressItem(
-                  context: context,
-                  icon: Image.asset('assets/icons/progress_5.png',
-                      width: 30, height: 30),
-                  label: 'Araw',
-                  value: daysProgress.toString(),
-                  maxWidth: halfScreenWidth,
-                ),
-                _buildProgressItem(
-                  context: context,
-                  icon: Image.asset('assets/icons/progress_6.png',
-                      width: 30, height: 30),
-                  label: 'Streak',
-                  value: streakProgress.toString(),
-                  maxWidth: halfScreenWidth,
-                ),
-                                _buildProgressItem(
-                  context: context,
-                  icon: Image.asset('assets/icons/progress_6.png',
-                      width: 30, height: 30),
-                  label: 'Longest Streak',
-                  value: longestStreakProgress.toString(),
-                  maxWidth: halfScreenWidth,
-                ),
-              ],
-            ),
-          ],
-        ),
+              _buildProgressItem(
+                context: context,
+                icon: Image.asset('assets/icons/progress_2.png',
+                    width: progressIconSize, height: progressIconSize),
+                label: 'Natapos na Kategorya',
+                value: categoriesProgress.toString(),
+                maxWidth: halfScreenWidth,
+              ),
+              _buildProgressItem(
+                context: context,
+                icon: Image.asset('assets/icons/progress_3.png',
+                    width: progressIconSize, height: progressIconSize),
+                label: 'Minuto ng pag-aaral',
+                value: minutesProgress.toString(),
+                maxWidth: halfScreenWidth,
+              ),
+              _buildProgressItem(
+                context: context,
+                icon: Image.asset('assets/icons/progress_4.png',
+                    width: progressIconSize, height: progressIconSize),
+                label: 'Bilang ng araw ng pagaaral',
+                value: daysProgress.toString(),
+                maxWidth: halfScreenWidth,
+              ),
+              _buildProgressItem(
+                context: context,
+                icon: Image.asset('assets/icons/progress_5.png',
+                    width: progressIconSize, height: progressIconSize),
+                label: 'Bilang ng araw na sunod sunod',
+                value: streakProgress.toString(),
+                maxWidth: halfScreenWidth,
+              ),
+              _buildProgressItem(
+                context: context,
+                icon: Image.asset('assets/icons/progress_6.png',
+                    width: progressIconSize, height: progressIconSize),
+                label: 'Pinakamatagal na sunod sunod',
+                value: longestStreakProgress.toString(),
+                maxWidth: halfScreenWidth,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -232,104 +254,50 @@ class ProfileScreen extends StatelessWidget {
     required String value,
     required double maxWidth,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      width: maxWidth,
-      decoration: BoxDecoration(
-        color: AppColors.secondaryBackground,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            offset: const Offset(2, 2),
-            blurRadius: 6,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isSmallScreen = constraints.maxWidth < 350;
+
+        return Container(
+          padding: EdgeInsets.all(isSmallScreen ? 15 : 20),
+          width: maxWidth,
+          decoration: BoxDecoration(
+            color: AppColors.secondaryBackground,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                offset: const Offset(2, 2),
+                blurRadius: 6,
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          icon,
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              icon,
+              SizedBox(width: isSmallScreen ? 14 : 18),
+              Expanded(
+                child: Text(
                   label,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 14 : 16,
                   ),
                 ),
-              ],
-            ),
+              ),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: isSmallScreen ? 16 : 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  // Profile Options
-  Widget _buildProfileOptions(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-      child: ListView(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        children: [
-          ListTile(
-            leading: const Icon(Icons.person_2_rounded),
-            title: const Text('Profile'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const UpdateProfileScreen()),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.lock),
-            title: const Text('Magpalit ng Password'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const ChangePasswordScreen()),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.help_center),
-            title: const Text('Magbigay katugunan'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const FeedbackScreen()),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Logout'),
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return const LogoutScreen();
-                },
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
+
 }

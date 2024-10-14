@@ -54,16 +54,15 @@ class _CategoryScreenState extends State<CategoryScreen>
     }
   }
 
- @override
-Widget build(BuildContext context) {
-  super.build(context);
-  return Scaffold(
-    body: isLoading
-        ? const LoadingShimmerCategory() // Custom loading shimmer
-        : _categoryContainer(categories),
-  );
-}
-
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return Scaffold(
+      body: isLoading
+          ? const LoadingShimmerCategory() // Custom loading shimmer
+          : _categoryContainer(categories),
+    );
+  }
 
   Widget _categoryContainer(List<Category> categories) {
     return ListView.builder(
@@ -83,8 +82,7 @@ Widget build(BuildContext context) {
           height: MediaQuery.of(context).size.height * 1 / 3.61,
           decoration: const BoxDecoration(
             border: Border(
-              bottom: BorderSide(
-                  width: 3, color: Color.fromARGB(255, 96, 96, 96)),
+              bottom: BorderSide(width: 3, color: Color.fromARGB(255, 96, 96, 96)),
             ),
           ),
           child: Column(
@@ -122,26 +120,49 @@ Widget build(BuildContext context) {
   }
 
   Widget _subcategoryList(Category category) {
-    return Column(
-      children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: category.subcategories.map((subcategory) {
-              return _subcategoryImageWithTitle(
-                  subcategory.imagePath,
-                  capitalizeFirstLetter(subcategory.name),
-                  subcategory,
-                  category);
-            }).toList(),
-          ),
-        ),
-      ],
+    return FutureBuilder<List<String>>(
+      future: _categoryService.getCompletedSubcategories(
+        userId: userId ?? '',
+        categoryId: category.id,
+      ),
+      builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return const Text('Error loading subcategories');
+        } else if (snapshot.hasData) {
+          List<String> completedSubcategories = snapshot.data!;
+
+          return Column(
+            children: [
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: category.subcategories.map((subcategory) {
+                    return _subcategoryImageWithTitle(
+                      subcategory.imagePath,
+                      capitalizeFirstLetter(subcategory.name),
+                      subcategory,
+                      category,
+                      completedSubcategories, // Pass completed subcategories
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          );
+        } else {
+          return const Text('No subcategories available');
+        }
+      },
     );
   }
 
   Widget _subcategoryImageWithTitle(String imagePath, String title,
-      Subcategory subcategory, Category category) {
+      Subcategory subcategory, Category category, List<String> completedSubcategories) {
+    // Check if the subcategory is completed
+    bool isCompleted = completedSubcategories.contains(subcategory.id);
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -165,7 +186,10 @@ Widget build(BuildContext context) {
           children: [
             Container(
               decoration: BoxDecoration(
-                border: Border.all(width: 6, color: AppColors.accentColor),
+                border: Border.all(
+                  width: 6,
+                  color: isCompleted ? AppColors.correct : AppColors.accentColor,
+                ),
                 borderRadius: BorderRadius.circular(20),
               ),
               width: 120,
@@ -178,7 +202,8 @@ Widget build(BuildContext context) {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return const Center(
-                              child: Text('Image not available'));
+                            child: Text('Image not available'),
+                          );
                         },
                       ),
                     )
