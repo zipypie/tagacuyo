@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:taga_cuyo/src/features/common_widgets/custom_alert_dialog.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
@@ -37,53 +38,46 @@ class ChangePasswordScreenState extends State<ChangePasswordScreen>
     super.dispose();
   }
 
-  Future<void> _saveUserData() async {
-    if (_user != null) {
-      try {
-        // Check if the new password and confirm password match
-        if (_newPasswordController.text != _confirmPasswordController.text) {
-          _showAlertDialog('Maling password',
-              'Ang bagong password ay hindi nagtutugma.');
-          return;
-        }
-
-        AuthCredential credential = EmailAuthProvider.credential(
-          email: _user!.email!,
-          password: _currentPasswordController.text,
+Future<void> _saveUserData() async {
+  if (_user != null) {
+    try {
+      // Check if the new password and confirm password match
+      if (_newPasswordController.text != _confirmPasswordController.text) {
+        await showCustomAlertDialog(
+          context,
+          'Maling Password', // Title for the dialog
+          'Ang bagong password ay hindi nagtutugma.', // Content for the dialog
+          buttonText: 'Ayos', // Button text
         );
-
-        // Attempt to reauthenticate
-        await _user!.reauthenticateWithCredential(credential);
-
-        // Update password
-        await _user!.updatePassword(_newPasswordController.text);
-        _showAlertDialog('Success', 'Ang password ay na-update nang matagumpay!');
-      } catch (e) {
-        _showAlertDialog('Error', 'Nabigong i-update ang password: $e');
+        return;
       }
+
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: _user!.email!,
+        password: _currentPasswordController.text,
+      );
+
+      // Attempt to reauthenticate
+      await _user!.reauthenticateWithCredential(credential);
+
+      // Update password
+      await _user!.updatePassword(_newPasswordController.text);
+      await showCustomAlertDialog(
+        context,
+        'Success', // Title for the dialog
+        'Ang password ay na-update nang matagumpay!', // Content for the dialog
+        buttonText: 'Ayos', // Button text
+      );
+    } catch (e) {
+      await showCustomAlertDialog(
+        context,
+        'Error', // Title for the dialog
+        'Nabigong i-update ang password: $e', // Content for the dialog
+        buttonText: 'Ayos', // Button text
+      );
     }
   }
-
-
-  void _showAlertDialog(String title, String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+}
 
   @override
   Widget build(BuildContext context) {

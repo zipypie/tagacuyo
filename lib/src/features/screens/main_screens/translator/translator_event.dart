@@ -8,3 +8,8 @@ class TranslateText extends TranslatorEvent {
 
   TranslateText(this.text);
 }
+
+class UpdateCharacterCount extends TranslatorEvent {
+  final int count;
+  UpdateCharacterCount(this.count);
+}

@@ -104,7 +104,8 @@ Future<String> signUpUser({
       'days': 0,        // Default value
       'lessons': 0,     // Default value
       'minutes': 0,     // Default value
-      'streak': 0,      // Default value
+      'streak': 0,  
+      'longest_streak': 0,    // Default value
     });
 
     res = "Success";

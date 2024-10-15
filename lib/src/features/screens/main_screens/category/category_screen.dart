@@ -158,69 +158,76 @@ class _CategoryScreenState extends State<CategoryScreen>
     );
   }
 
-  Widget _subcategoryImageWithTitle(String imagePath, String title,
-      Subcategory subcategory, Category category, List<String> completedSubcategories) {
-    // Check if the subcategory is completed
-    bool isCompleted = completedSubcategories.contains(subcategory.id);
+ Widget _subcategoryImageWithTitle(String imagePath, String title,
+    Subcategory subcategory, Category category, List<String> completedSubcategories) {
+  // Check if the subcategory is completed
+  bool isCompleted = completedSubcategories.contains(subcategory.id);
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CategoryQuizScreen(
-              subcategoryTitle: subcategory.name,
-              categoryId: category.id, // Use the category's id
-              currentWord: '',
-              subcategoryId: subcategory.id,
-              userId: userId ?? '',
-            ),
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CategoryQuizScreen(
+            subcategoryTitle: subcategory.name,
+            categoryId: category.id, // Use the category's id
+            currentWord: '',
+            subcategoryId: subcategory.id,
+            userId: userId ?? '',
           ),
-        );
-      },
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width / 3,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  width: 6,
-                  color: isCompleted ? AppColors.correct : AppColors.accentColor,
-                ),
-                borderRadius: BorderRadius.circular(20),
+        ),
+      );
+    },
+    child: SizedBox(
+      width: MediaQuery.of(context).size.width / 3,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                width: 6,
+                color: isCompleted ? Colors.green : AppColors.accentColor,
               ),
-              width: 120,
-              height: 120,
-              child: imagePath.isNotEmpty
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(15.0),
-                      child: Image.network(
-                        imagePath,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Center(
-                            child: Text('Image not available'),
-                          );
-                        },
-                      ),
-                    )
-                  : const Center(child: Text('Image not available')),
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(height: 5),
-            Text(
+            width: 120,
+            height: 120,
+            child: imagePath.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(15.0),
+                    child: Image.network(
+                      imagePath,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Text('Imahe ay hindi magagamit'),
+                        );
+                      },
+                    ),
+                  )
+                : const Center(child: Text('Imahe ay hindi magagamit')),
+          ),
+          const SizedBox(height: 5),
+          // Ensuring a fixed height for the text container
+          SizedBox(
+            height: MediaQuery.of(context).size.height*0.06, // Adjust this height as needed
+            child: Text(
               title,
               style: const TextStyle(
                 fontFamily: AppFonts.fcr,
-                fontSize: 16,
+                fontSize: 19,
               ),
               textAlign: TextAlign.center,
+              maxLines: 2, // Limit to two lines to prevent overflow
+              overflow: TextOverflow.ellipsis, // Add ellipsis for long text
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 }

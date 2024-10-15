@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:taga_cuyo/src/features/common_widgets/button.dart';
 import 'translation_bloc.dart';
 import 'translator_event.dart';
 import 'translator_state.dart';
@@ -12,7 +11,6 @@ class TranslatorScreen extends StatelessWidget {
 
   TranslatorScreen({super.key});
 
-  @override
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -45,9 +43,8 @@ class TranslatorScreen extends StatelessWidget {
                         height: 40,
                       ),
                     ),
-                    _buildInputContainer(cubit),
+                    _buildInputContainer(cubit, state), // Pass state as a parameter
                     _buildOutputContainer(cubit),
-                    _buildTranslateButton(cubit),
                   ],
                 ),
               ),
@@ -58,7 +55,7 @@ class TranslatorScreen extends StatelessWidget {
     );
   }
 
-Widget _buildInputContainer(TranslatorBloc cubit) {
+Widget _buildInputContainer(TranslatorBloc cubit, TranslatorState state) {
   return Container(
     padding: const EdgeInsets.fromLTRB(30, 15, 30, 15),
     child: Column(
@@ -70,13 +67,19 @@ Widget _buildInputContainer(TranslatorBloc cubit) {
         ),
         TextField(
           controller: _inputController,
-          maxLines: 6,
+          maxLines: 7,
           onChanged: (text) {
-            if (text.isEmpty) {
+            // Trim whitespace to avoid counting it as a character
+            String trimmedText = text.trim();
+            if (trimmedText.isEmpty) {
               _outputController.clear(); // Clear the output text when input is empty
+              cubit.add(TranslateText(trimmedText)); // Emit event for empty input
             } else {
-              cubit.add(TranslateText(text));
+              cubit.add(TranslateText(trimmedText)); // Emit event for non-empty input
             }
+            // Dispatch event to update character count (this line can be omitted)
+            // You may remove this if you don't need to manually update
+            // cubit.add(UpdateCharacterCount(trimmedText.length)); 
           },
           decoration: InputDecoration(
             filled: true,
@@ -106,7 +109,12 @@ Widget _buildInputContainer(TranslatorBloc cubit) {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('${_inputController.text.length} characters'),
+                // Update character count display based on current state
+                Text(
+                  state is TranslatorTranslated
+                      ? '${state.characterCount} characters'
+                      : '0 characters', // Default to 0 if state is not TranslatorTranslated
+                ),
                 IconButton(
                   icon: const Icon(Icons.copy),
                   onPressed: () {
@@ -135,7 +143,7 @@ Widget _buildInputContainer(TranslatorBloc cubit) {
           ),
           TextField(
             controller: _outputController, // Use _outputController for output
-            maxLines: 6,
+            maxLines: 7,
             readOnly:
                 true, // Make it read-only if it's just for displaying translation
             decoration: InputDecoration(
@@ -186,18 +194,6 @@ Widget _buildInputContainer(TranslatorBloc cubit) {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildTranslateButton(TranslatorBloc cubit) {
-    return MyButton(
-      onTab: () {
-        final text = _inputController.text;
-        if (text.isNotEmpty) {
-          cubit.add(TranslateText(text));
-        }
-      },
-      text: 'Translate',
     );
   }
 }

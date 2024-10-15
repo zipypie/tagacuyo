@@ -4,6 +4,7 @@ import 'package:taga_cuyo/src/features/common_widgets/loading_animation/lesson_l
 import 'package:taga_cuyo/src/features/constants/capitalize.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/lesson/quiz/quiz.dart';
 import 'package:taga_cuyo/src/features/services/authentication.dart';
+import 'package:taga_cuyo/src/features/services/lesson_service.dart';
 import 'package:taga_cuyo/src/features/utils/logger.dart';
 import 'lesson_bloc.dart';
 import 'lesson_event.dart';
@@ -21,6 +22,7 @@ class LessonScreenPage extends StatefulWidget {
 
 class _LessonScreenPageState extends State<LessonScreenPage> {
   final AuthService _authService = AuthService();
+  final lessonProgressService = LessonProgressService();
   late LessonBloc _lessonBloc;
   int lessonProgress = 0;
   int maxLength = 0;
@@ -103,7 +105,8 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
                       spacing: 10,
                       runSpacing: 10,
                       children: lessons
-                          .map((lesson) => _lessonListItem(context, lesson))
+                          .map((lesson) => _lessonListItem(
+                              context, lesson, _authService.getUserId()!))
                           .toList(),
                     ),
                   );
@@ -190,86 +193,163 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
     );
   }
 
-  // Lesson List Item with Navigation
- // Lesson List Item with Navigation
-Widget _lessonListItem(BuildContext context, Map<String, dynamic> lesson) {
-  double containerWidth = MediaQuery.of(context).size.width / 2 - 37; // Half of screen width minus margin
+  Widget _lessonListItem(
+      BuildContext context, Map<String, dynamic> lesson, String userId) {
+    double containerWidth = MediaQuery.of(context).size.width / 2 -
+        37; // Half of screen width minus margin
 
-  return GestureDetector(
-    onTap: () {
-      // Navigate to quiz screen with the lesson data
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => LessonQuizScreen(
-            lessonName: lesson['lesson_name'] ?? 'Unknown Lesson',
-            documentId: lesson['id'] ?? '',
-            imagePath: lesson['image_path'] ?? '', // Pass the correct image_path
-          ),
-        ),
-      );
-    },
-    child: Container(
-      width: containerWidth,
-      height: containerWidth, // Set height equal to width for a square
-      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
-      decoration: BoxDecoration(
-        color: AppColors.secondaryBackground,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB( 10 , 8 , 10 , 8 ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              '${lesson['id']}', // Use lesson id for the lesson number
-              style: const TextStyle(
-                fontFamily: AppFonts.fcr,
-                fontSize: 16,
-                color: Color.fromARGB(255, 73, 109, 126),
-              ),
+    return GestureDetector(
+      onTap: () {
+        // Navigate to quiz screen with the lesson data
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LessonQuizScreen(
+              lessonName: lesson['lesson_name'] ?? 'Unknown Lesson',
+              documentId: lesson['id'] ?? '',
             ),
-            FutureBuilder<String>(
-              future: _lessonBloc.fetchImageFromStorage(lesson['image_path'] ?? ''), // Use image_path directly
+          ),
+        );
+      },
+      child: Column(
+        children: [
+          Text(
+            '${lesson['id']}', // Use lesson id for the lesson number
+            style: const TextStyle(
+              fontFamily: AppFonts.fcr,
+              fontSize: 18,
+              color: Color.fromARGB(255, 156, 156, 156),
+            ),
+            textAlign: TextAlign.center, // Center the text
+          ),
+          Container(
+            width: containerWidth,
+            height: containerWidth, // Set height equal to width for a square
+            margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
+  
+            child: FutureBuilder<bool>(
+              future:
+                  lessonProgressService.isLessonCompleted(userId, lesson['id']),
               builder: (context, snapshot) {
+                // Check the connection state
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator(); // Loading state for image
+                  return const Center(
+                      child:
+                          CircularProgressIndicator()); // Centered loading state for completion check
                 }
 
-                if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Icon(Icons.error, size: 60); // Show error icon if image fetch fails
+                // Check if there was an error or if the data is not available
+                if (snapshot.hasError) {
+                  return const Center(
+                      child: Icon(Icons.error,
+                          size: 60)); // Show error icon if there was an error
                 }
-                return Image.network(
-                  snapshot.data!,
-                  width: 70, // Adjust image size as needed
-                  height: 70, // Adjust image size as needed
-                );
+
+                // Check if the lesson is completed
+                if (snapshot.hasData && snapshot.data == true) {
+                  // Change border color to green if completed
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBackground,
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(
+                        color: Colors.green, // Change border color to green
+                        width: 12,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    // Place child widgets for completed lesson inside this Container
+                    child: _buildLessonContent(lesson),
+                  );
+                } else {
+                  // Default state for not completed
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBackground,
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(
+                        color: AppColors.accentColor, // Default transparent border
+                        width: 12,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    // Place child widgets for not completed lesson inside this Container
+                    child: _buildLessonContent(lesson),
+                  );
+                }
               },
             ),
-            Text(
-              capitalizeFirstLetter(lesson['lesson_name']), // Display lesson name safely
+          ),
+          // Move the lesson name outside the container
+          Padding(
+            padding: const EdgeInsets.symmetric(
+                vertical: 4), // Optional padding for spacing
+            child: Text(
+              capitalizeFirstLetter(
+                  lesson['lesson_name']), // Display lesson name safely
               style: const TextStyle(
                 fontSize: 18,
                 fontFamily: AppFonts.fcr,
-                color: AppColors.titleColor,
+                color: Color.fromARGB(255, 0, 0, 0),
               ),
               textAlign: TextAlign.center, // Center the text
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    ),
-  );
-}
+    );
+  }
 
+// Helper method to build lesson content
+  Widget _buildLessonContent(Map<String, dynamic> lesson) {
+    // This method can be used to create content for the lesson
+    return Padding(
+      padding: const EdgeInsets.all(8.0), // Padding around the image
+      child: Column(
+        children: [
+          Expanded(
+            child: FutureBuilder<String>(
+              future: _lessonBloc.fetchImageFromStorage(
+                  lesson['image_path'] ?? ''), // Use image_path directly
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                      child:
+                          CircularProgressIndicator()); // Centered loading state for image
+                }
+
+                if (snapshot.hasError ||
+                    !snapshot.hasData ||
+                    snapshot.data!.isEmpty) {
+                  return const Center(
+                      child: Icon(Icons.error,
+                          size: 60)); // Show error icon if image fetch fails
+                }
+                return FittedBox(
+                  fit: BoxFit.cover, // Ensure image covers the box
+                  child: Image.network(
+                    snapshot.data!,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

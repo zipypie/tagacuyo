@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart'; // Import Firebase Storage
 import 'package:flutter/material.dart';
 import 'package:taga_cuyo/src/features/common_widgets/button.dart';
+import 'package:taga_cuyo/src/features/common_widgets/custom_alert_dialog.dart';
 import 'package:taga_cuyo/src/features/constants/capitalize.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
@@ -56,7 +57,7 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
 
     if (_currentWordIndex >= dataList.length) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showCongratulationsDialog();
+        _showCongratulationsDialog(widget.subcategoryTitle);
       });
       return const Center(child: Text('Natapos na ang pagsubok'));
     }
@@ -172,7 +173,7 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
           _currentWordIndex = 0; // Reset index
         });
       } else {
-        _showCongratulationsDialog(); // Consider handling this more gracefully
+        _showCongratulationsDialog(widget.subcategoryTitle); // Consider handling this more gracefully
       }
     } catch (e) {
       Logger.log('Error fetching Category subcategory data: $e');
@@ -189,50 +190,41 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
     }
   }
 
-  void _showCongratulationsDialog() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Binabati Kita!'),
-          content: const Text('Natapos mo na ang lahat ng pagsubok!'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
+ void _showCongratulationsDialog(String subcategoryTitle) async {
+  await showCustomAlertDialog(
+    context,
+    'Binabati Kita!', // Title for the dialog
+    'Natapos mo na ang lahat ng pagsubok sa $subcategoryTitle', // Content for the dialog
+    buttonText: 'OK', // Button text
+  );
 
-    bool isFinished = await _categoryService.isSubcategoryFinished(
-      userId: widget.userId,
-      categoryId: widget.categoryId,
-      subcategoryId: widget.subcategoryId,
-    );
+  // Check if the subcategory is finished
+  bool isFinished = await _categoryService.isSubcategoryFinished(
+    userId: widget.userId,
+    categoryId: widget.categoryId,
+    subcategoryId: widget.subcategoryId,
+  );
 
-// If not finished, update user progress
-    if (!isFinished) {
-      await _categoryService.updateUserProgress(
-        userId: widget.userId,
-        categoryId: widget.categoryId,
-        subcategoryId: widget.subcategoryId,
-      );
-    }
-
+  // If not finished, update user progress
+  if (!isFinished) {
     await _categoryService.updateUserProgress(
       userId: widget.userId,
       categoryId: widget.categoryId,
       subcategoryId: widget.subcategoryId,
     );
-
-
   }
+
+  // Update user progress again after showing the dialog
+  await _categoryService.updateUserProgress(
+    userId: widget.userId,
+    categoryId: widget.categoryId,
+    subcategoryId: widget.subcategoryId,
+  );
+
+  // Optionally navigate back to the first screen if needed
+  Navigator.of(context).popUntil((route) => route.isFirst);
+}
+
 
   void handleAnswer(String selectedAnswer) {
     setState(() {
@@ -243,7 +235,7 @@ class _CategoryQuizScreenState extends State<CategoryQuizScreen> {
 
     if (_isCorrect && _currentWordIndex + 1 >= dataList.length) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showCongratulationsDialog();
+        _showCongratulationsDialog(widget.subcategoryTitle);
       });
     }
   }

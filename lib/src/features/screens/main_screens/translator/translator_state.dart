@@ -11,6 +11,7 @@ class TranslatorDirectionToggled extends TranslatorState {
 
 class TranslatorTranslated extends TranslatorState {
   final String translatedText;
+  final int characterCount; // Add a character count field
 
-  TranslatorTranslated(this.translatedText);
+  TranslatorTranslated(this.translatedText, {this.characterCount = 0});
 }

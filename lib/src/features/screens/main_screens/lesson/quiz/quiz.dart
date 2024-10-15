@@ -1,5 +1,5 @@
+// lesson_quiz_screen.dart
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:taga_cuyo/src/features/common_widgets/button.dart';
 import 'package:taga_cuyo/src/features/common_widgets/custom_alert_dialog.dart';
 import 'package:taga_cuyo/src/features/constants/capitalize.dart';
@@ -16,7 +16,7 @@ class LessonQuizScreen extends StatefulWidget {
   const LessonQuizScreen({
     super.key,
     required this.lessonName,
-    required this.documentId, required imagePath,
+    required this.documentId,
   });
 
   @override
@@ -25,10 +25,10 @@ class LessonQuizScreen extends StatefulWidget {
 
 class LessonQuizScreenState extends State<LessonQuizScreen> {
   final LessonProgressService _progressService = LessonProgressService();
-  late int completedLessons = 0; // Default value of 0
+  late int completedLessons = 0;
   final AuthService _authService = AuthService();
   int _currentQuizIndex = 0;
-  List<String> _quizIds = [];
+  List<String> quizIds = [];
   List<Map<String, dynamic>> _words = [];
   bool _isLoading = true;
   int _currentWordIndex = 0;
@@ -58,114 +58,45 @@ class LessonQuizScreenState extends State<LessonQuizScreen> {
     super.dispose();
   }
 
-  Future<void> _updateLessonProgress() async {
-    try {
-      String? userId = _authService.getUserId();
-      if (userId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User is not logged in.')),
-        );
-        return;
-      }
-
-      DocumentReference userProgressDocRef =
-          FirebaseFirestore.instance.collection('user_progress').doc(userId);
-
-      DocumentSnapshot userProgressDoc = await userProgressDocRef.get();
-
-      bool isCompleted =
-          (userProgressDoc.data() as Map<String, dynamic>?)?['lessons_progress']
-                  ?[widget.documentId]?['isCompleted'] ??
-              false;
-
-      if (isCompleted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('You have already completed this lesson.')),
-        );
-        return;
-      }
-
-      // Proceed to update only if not completed
-      await userProgressDocRef.set({
-        'lessons': FieldValue.increment(1),
-        'lessons_progress': {
-          widget.documentId: {
-            'isCompleted': true, // Set to true after completing the lesson
-          },
-        },
-      }, SetOptions(merge: true));
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lesson progress updated!')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating lesson progress: $e')),
-      );
-    }
+Future<void> _updateLessonProgress() async {
+  String? userId = _authService.getUserId();
+  if (userId == null) {
+    await showCustomAlertDialog(
+      context,
+      'Error', // Title for the dialog
+      'Hindi naka-log in ang user.', // Content for the dialog
+      buttonText: 'OK', // Button text
+    );
+    return;
   }
+
+  try {
+    await _progressService.updateLessonProgress(widget.documentId, userId);
+    await showCustomAlertDialog(
+      context,
+      'Tagumpay', // Title for the dialog
+      'Na-update na ang progreso ng aralin!', // Content for the dialog
+      buttonText: 'OK', // Button text
+    );
+  } catch (e) {
+    await showCustomAlertDialog(
+      context,
+      'Error', // Title for the dialog
+      'Error: $e', // Content for the dialog
+      buttonText: 'OK', // Button text
+    );
+  }
+}
+
 
   Future<void> _fetchWords() async {
-    try {
-      Logger.log('Fetching words for lesson: ${widget.lessonName}');
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('lessons')
-          .where('lesson_name', isEqualTo: widget.lessonName)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        final lessonDoc = querySnapshot.docs[0];
-        Logger.log('Lesson found: ${lessonDoc.id}');
-
-        final wordsSnapshot =
-            await lessonDoc.reference.collection('words').get();
-        if (wordsSnapshot.docs.isNotEmpty) {
-          List<Map<String, dynamic>> words = [];
-          _quizIds = querySnapshot.docs.map((doc) => doc.id).toList();
-          for (var doc in wordsSnapshot.docs) {
-            final data = doc.data();
-
-            // Retrieve options
-            List<String> options = List<String>.from(data['options'] ?? []);
-
-            // Shuffle options
-            options.shuffle(); // Shuffle the options
-
-            words.add({
-              'word': data['word'],
-              'translated': data['translated'],
-              'options': options,
-            });
-          }
-
-          setState(() {
-            _words = words;
-            _isLoading = false;
-          });
-        } else {
-          setState(() {
-            _words = [];
-            _isLoading = false;
-          });
-        }
-      } else {
-        setState(() {
-          _words = [];
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Mali: $e')),
-      );
-    }
+    _words = await _progressService.fetchWords(widget.lessonName);
+    setState(() {
+      _isLoading = false;
+    });
   }
 
-  Future<void> _checkAnswer() async {
+Future<void> _checkAnswer() async {
     if (_words.isNotEmpty && _currentWordIndex < _words.length) {
       String selectedAnswer = selectedOptions
           .join(' ')
@@ -177,6 +108,10 @@ class LessonQuizScreenState extends State<LessonQuizScreen> {
           _words[_currentWordIndex]['translated'].trim().toLowerCase();
 
       if (expectedTranslation == selectedAnswer) {
+        // Show the correct answer dialog
+        _showCorrectAnswerDialog(expectedTranslation);
+
+        // Move to the next word/quiz after dialog is dismissed
         if (_currentWordIndex < _words.length - 1) {
           setState(() {
             _currentWordIndex++;
@@ -184,30 +119,20 @@ class LessonQuizScreenState extends State<LessonQuizScreen> {
             _updateTextField();
           });
         } else {
-          if (_currentQuizIndex < _quizIds.length - 1) {
+          if (_currentQuizIndex < quizIds.length - 1) {
             _loadNextQuiz();
           } else {
             // Update lesson progress when the last quiz is completed
-            await _updateLessonProgress(); // Call the update method here
+            await _updateLessonProgress();
             _showCompletionDialog();
           }
-          showCustomAlertDialog(
-            context,
-            'Binabati kita!',
-            'Natapos na ang pagsubok sa aralin.',
-            buttonText: 'OK!', // Custom button text
-          );
         }
       } else {
-        showCustomAlertDialog(
-          context,
-          'Oops!',
-          'Mali ang iyong sagot, uliting muli!',
-          buttonText: 'OK!', // Custom button text
-        );
+        _showIncorrectAnswerDialog(expectedTranslation);
       }
     }
-  }
+}
+
 
   void _loadNextQuiz() async {
     setState(() {
@@ -219,27 +144,143 @@ class LessonQuizScreenState extends State<LessonQuizScreen> {
     });
   }
 
-  void _showCompletionDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Binabati kita!'),
-          content: const Text('Natapos ma na ang pagsubok sa aralin.'),
-          actions: [
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.pop(
-                    context); // Optionally navigate back to previous screen
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+void _showCompletionDialog() {
+  showCustomAlertDialog(
+    context,
+    'Binabati kita!', // Title of the dialog
+    'Natapos mo na ang pagsubok sa aralin.', // Content of the dialog
+    buttonText: 'OK', // Button text
+  ).then((_) {
+    Navigator.pop(context); // Optionally navigate back to the previous screen
+  });
+}
+
+  void _showCorrectAnswerDialog(String correctAnswer) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog( // Use Dialog instead of AlertDialog for more customization
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12), // Rounded corners
+        ),
+        elevation: 10, // Shadow effect
+        child: Container(
+          padding: const EdgeInsets.all(20), // Padding inside the dialog
+          decoration: BoxDecoration(
+            color: AppColors.primaryBackground, // Background color of the dialog
+            borderRadius: BorderRadius.circular(12), // Match the shape's border radius
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Size the dialog to fit its content
+            children: [
+              const Text(
+                'Bravo! Tamang sagot',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                  fontFamily: AppFonts.fcb, // Set the font family for the title
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Ang sagot ay "$correctAnswer".',
+                style: const TextStyle(
+                  fontSize: 21,
+                  fontFamily: AppFonts.fcr, // Set the font family for the content
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, // Set the text color on the button
+                  backgroundColor: AppColors.primary, // Set the button's background color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25), // Rounded corners for button
+                  ),
+                ),
+                child: const Text(
+                  'Okay',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontFamily: AppFonts.fcb, // Set the font family for the button text
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+
+ void _showIncorrectAnswerDialog(String correctAnswer) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog( // Use Dialog instead of AlertDialog for more customization
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12), // Rounded corners
+        ),
+        elevation: 10, // Shadow effect
+        child: Container(
+          padding: const EdgeInsets.all(20), // Padding inside the dialog
+          decoration: BoxDecoration(
+            color: AppColors.primaryBackground, // Background color of the dialog
+            borderRadius: BorderRadius.circular(12), // Match the shape's border radius
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Size the dialog to fit its content
+            children: [
+              const Text(
+                'Oops! Maling sagot',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                  fontFamily: AppFonts.fcb, // Set the font family for the title
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Ang tamang sagot ay "$correctAnswer"',
+                style: const TextStyle(
+                  fontSize: 21,
+                  fontFamily: AppFonts.fcr, // Set the font family for the content
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, // Set the text color on the button
+                  backgroundColor: AppColors.primary, // Set the button's background color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25), // Rounded corners for button
+                  ),
+                ),
+                child: const Text(
+                  'Ulitin',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontFamily: AppFonts.fcb, // Set the font family for the button text
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+
 
   void _toggleOption(String option) {
     setState(() {
