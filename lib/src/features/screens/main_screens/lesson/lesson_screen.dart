@@ -129,7 +129,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
   Widget _lessonHeader(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.14,
+      height: MediaQuery.of(context).size.height * 0.18,
       decoration: BoxDecoration(
         gradient: AppColors.boxGradient,
         borderRadius: BorderRadius.circular(15),

@@ -79,7 +79,7 @@ class _CategoryScreenState extends State<CategoryScreen>
       builder: (context, snapshot) {
         int completedCount = snapshot.data ?? 0; // Get the completed count
         return Container(
-          height: MediaQuery.of(context).size.height * 1 / 3.61,
+          height: 247,
           decoration: const BoxDecoration(
             border: Border(
               bottom: BorderSide(width: 3, color: Color.fromARGB(255, 96, 96, 96)),
@@ -89,7 +89,7 @@ class _CategoryScreenState extends State<CategoryScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.all(15.0),
+                padding: const EdgeInsets.fromLTRB(15, 15, 15 , 15),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -158,85 +158,84 @@ class _CategoryScreenState extends State<CategoryScreen>
     );
   }
 
- Widget _subcategoryImageWithTitle(String imagePath, String title,
-    Subcategory subcategory, Category category, List<String> completedSubcategories) {
-  // Check if the subcategory is completed
-  bool isCompleted = completedSubcategories.contains(subcategory.id);
+  Widget _subcategoryImageWithTitle(String imagePath, String title,
+      Subcategory subcategory, Category category, List<String> completedSubcategories) {
+    // Check if the subcategory is completed
+    bool isCompleted = completedSubcategories.contains(subcategory.id);
 
-  final contentWidth = MediaQuery.of(context).size.width;
+    final contentWidth = MediaQuery.of(context).size.width;
 
-  // Determine font size based on screen width
-  double fontSize;
-  if (contentWidth < 320) {
-    fontSize = 16; // Smaller font for narrow screens
-  } else {
-    fontSize = 19; // Medium font for medium-width screens
-  } 
+    // Determine font size based on screen width
+    double fontSize;
+    if (contentWidth < 320) {
+      fontSize = 14; // Smaller font for narrow screens
+    } else {
+      fontSize = 18; // Medium font for medium-width screens
+    } 
 
-  return GestureDetector(
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CategoryQuizScreen(
-            subcategoryTitle: subcategory.name,
-            categoryId: category.id, // Use the category's id
-            currentWord: '',
-            subcategoryId: subcategory.id,
-            userId: userId ?? '',
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CategoryQuizScreen(
+              subcategoryTitle: subcategory.name,
+              categoryId: category.id, // Use the category's id
+              currentWord: '',
+              subcategoryId: subcategory.id,
+              userId: userId ?? '',
+            ),
           ),
+        );
+      },
+      child: SizedBox(
+        width: contentWidth * 0.33, // 33% of the screen width
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  width: 6,
+                  color: isCompleted ? Colors.green : AppColors.accentColor,
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              width: contentWidth * 0.3, // 30% of the screen width
+              height: contentWidth * 0.3, // 30% of the screen width for height
+              child: imagePath.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(15.0),
+                      child: Image.network(
+                        imagePath,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Text('Imahe ay hindi magagamit'),
+                          );
+                        },
+                      ),
+                    )
+                  : const Center(child: Text('Imahe ay hindi magagamit')),
+            ),
+            const SizedBox(height: 5),
+            // Ensuring a fixed height for the text container
+            SizedBox(
+              height: 55, // Adjust this height as needed
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontFamily: AppFonts.fcr,
+                  fontSize: fontSize,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2, // Limit to two lines to prevent overflow
+              ),
+            ),
+          ],
         ),
-      );
-    },
-    child: SizedBox(
-      width: contentWidth * 0.33,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                width: 6,
-                color: isCompleted ? Colors.green : AppColors.accentColor,
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            width: contentWidth*0.3,
-            height:  contentWidth*0.3,
-            child: imagePath.isNotEmpty
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(15.0),
-                    child: Image.network(
-                      imagePath,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Center(
-                          child: Text('Imahe ay hindi magagamit'),
-                        );
-                      },
-                    ),
-                  )
-                : const Center(child: Text('Imahe ay hindi magagamit')),
-          ),
-          const SizedBox(height: 5),
-          // Ensuring a fixed height for the text container
-          SizedBox(
-            height: MediaQuery.of(context).size.height*0.06, // Adjust this height as needed
-            child: Text(
-              title,
-              style: TextStyle(
-                fontFamily: AppFonts.fcr,
-                fontSize: fontSize,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2, // Limit to two lines to prevent overflow
-            ),
-          ),
-        ],
       ),
-    ),
-  );
-}
-
+    );
+  }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
-import 'package:taga_cuyo/src/features/constants/images.dart';
 
 class AppBarScreen extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -20,18 +19,28 @@ class AppBarScreen extends StatelessWidget implements PreferredSizeWidget {
           style: const TextStyle(color: AppColors.titleColor,fontFamily: AppFonts.lilitaOne,fontSize: 24),
         ),
       ),
-      actions: const <Widget>[
-        Padding(
-          padding: EdgeInsets.only(right: 20), // Padding for the logo on the right
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: CustomImage(
-          src: 'assets/images/tagacuyo_logo.png', // Use the custom image widget
-          width: 60,
-          height: 60,
-        ),
-          ),
-        ),
+      actions: <Widget>[
+       Padding(
+         padding: const EdgeInsets.only(right: 20),
+         child: Container(
+           width: 60,
+           height: 60,
+           decoration: BoxDecoration(
+             borderRadius: BorderRadius.circular(25),
+           ),
+           child: Align(
+             alignment: Alignment.centerRight,
+             child: ClipOval(
+               child: Image.asset(
+          'assets/images/tagacuyo_logo.png', 
+          fit: BoxFit.cover, // This works without issues
+               ),
+             ),
+           ),
+         ),
+       ),
+
+
       ],
       backgroundColor: AppColors.primary, // Customize AppBar color
     );
