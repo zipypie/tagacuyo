@@ -22,3 +22,10 @@ class CustomImage extends StatelessWidget {
     );
   }
 }
+
+
+class LocalImages{
+  static String get getStarted1 => 'assets/images/get_started_1.png';
+  static String get getStarted2 => 'assets/images/get_started_2.png';
+  static String get getStarted3 => 'assets/images/get_started_3.png';
+}

@@ -58,36 +58,30 @@ class LessonQuizScreenState extends State<LessonQuizScreen> {
     super.dispose();
   }
 
-Future<void> _updateLessonProgress() async {
-  String? userId = _authService.getUserId();
-  if (userId == null) {
-    await showCustomAlertDialog(
-      context,
-      'Error', // Title for the dialog
-      'Hindi naka-log in ang user.', // Content for the dialog
-      buttonText: 'OK', // Button text
-    );
-    return;
-  }
+  Future<void> _updateLessonProgress() async {
+    String? userId = _authService.getUserId();
+    if (userId == null) {
+      await showCustomAlertDialog(
+        context,
+        'Error', // Title for the dialog
+        'Hindi naka-log in ang user.', // Content for the dialog
+        buttonText: 'OK', // Button text
+      );
+      return;
+    }
 
-  try {
-    await _progressService.updateLessonProgress(widget.documentId, userId);
-    await showCustomAlertDialog(
-      context,
-      'Tagumpay', // Title for the dialog
-      'Na-update na ang progreso ng aralin!', // Content for the dialog
-      buttonText: 'OK', // Button text
-    );
-  } catch (e) {
-    await showCustomAlertDialog(
-      context,
-      'Error', // Title for the dialog
-      'Error: $e', // Content for the dialog
-      buttonText: 'OK', // Button text
-    );
+    try {
+      await _progressService.updateLessonProgress(widget.documentId, userId);
+      await showCustomAlertDialog(
+        context,
+        'Tagumpay', // Title for the dialog
+        'Na-update na ang progreso ng aralin!', // Content for the dialog
+        buttonText: 'OK', // Button text
+      );
+    } catch (e) {
+      _showCompletionDialog();
+    }
   }
-}
-
 
   Future<void> _fetchWords() async {
     _words = await _progressService.fetchWords(widget.lessonName);
@@ -96,7 +90,7 @@ Future<void> _updateLessonProgress() async {
     });
   }
 
-Future<void> _checkAnswer() async {
+  Future<void> _checkAnswer() async {
     if (_words.isNotEmpty && _currentWordIndex < _words.length) {
       String selectedAnswer = selectedOptions
           .join(' ')
@@ -131,8 +125,7 @@ Future<void> _checkAnswer() async {
         _showIncorrectAnswerDialog(expectedTranslation);
       }
     }
-}
-
+  }
 
   void _loadNextQuiz() async {
     setState(() {
@@ -151,136 +144,157 @@ void _showCompletionDialog() {
     'Natapos mo na ang pagsubok sa aralin.', // Content of the dialog
     buttonText: 'OK', // Button text
   ).then((_) {
-    Navigator.pop(context); // Optionally navigate back to the previous screen
+    // Navigate back to the LessonScreenPage
+    Navigator.of(context).popUntil((route) => 
+      route.settings.name == 'LessonScreenPage' || route.isFirst
+    );
   });
 }
 
+
   void _showCorrectAnswerDialog(String correctAnswer) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return Dialog( // Use Dialog instead of AlertDialog for more customization
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12), // Rounded corners
-        ),
-        elevation: 10, // Shadow effect
-        child: Container(
-          padding: const EdgeInsets.all(20), // Padding inside the dialog
-          decoration: BoxDecoration(
-            color: AppColors.primaryBackground, // Background color of the dialog
-            borderRadius: BorderRadius.circular(12), // Match the shape's border radius
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          // Use Dialog instead of AlertDialog for more customization
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12), // Rounded corners
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min, // Size the dialog to fit its content
-            children: [
-              const Text(
-                'Bravo! Tamang sagot',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
-                  fontFamily: AppFonts.fcb, // Set the font family for the title
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Ang sagot ay "$correctAnswer".',
-                style: const TextStyle(
-                  fontSize: 21,
-                  fontFamily: AppFonts.fcr, // Set the font family for the content
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, // Set the text color on the button
-                  backgroundColor: AppColors.primary, // Set the button's background color
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25), // Rounded corners for button
-                  ),
-                ),
-                child: const Text(
-                  'Okay',
+          elevation: 10, // Shadow effect
+          child: Container(
+            padding: const EdgeInsets.all(20), // Padding inside the dialog
+            decoration: BoxDecoration(
+              color: AppColors
+                  .secondaryBackground, // Background color of the dialog
+              borderRadius:
+                  BorderRadius.circular(12), // Match the shape's border radius
+            ),
+            child: Column(
+              mainAxisSize:
+                  MainAxisSize.min, // Size the dialog to fit its content
+              children: [
+                const Text(
+                  'Bravo! Tamang sagot',
                   style: TextStyle(
-                    fontSize: 18,
-                    fontFamily: AppFonts.fcb, // Set the font family for the button text
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                    fontFamily:
+                        AppFonts.fcb, // Set the font family for the title
                   ),
                 ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
-}
-
-
- void _showIncorrectAnswerDialog(String correctAnswer) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return Dialog( // Use Dialog instead of AlertDialog for more customization
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12), // Rounded corners
-        ),
-        elevation: 10, // Shadow effect
-        child: Container(
-          padding: const EdgeInsets.all(20), // Padding inside the dialog
-          decoration: BoxDecoration(
-            color: AppColors.primaryBackground, // Background color of the dialog
-            borderRadius: BorderRadius.circular(12), // Match the shape's border radius
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min, // Size the dialog to fit its content
-            children: [
-              const Text(
-                'Oops! Maling sagot',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
-                  fontFamily: AppFonts.fcb, // Set the font family for the title
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Ang tamang sagot ay "$correctAnswer"',
-                style: const TextStyle(
-                  fontSize: 21,
-                  fontFamily: AppFonts.fcr, // Set the font family for the content
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, // Set the text color on the button
-                  backgroundColor: AppColors.primary, // Set the button's background color
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25), // Rounded corners for button
+                const SizedBox(height: 10),
+                Text(
+                  'Ang sagot ay "$correctAnswer".',
+                  style: const TextStyle(
+                    fontSize: 21,
+                    fontFamily:
+                        AppFonts.fcr, // Set the font family for the content
                   ),
                 ),
-                child: const Text(
-                  'Ulitin',
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: AppColors
+                        .primaryBackground, // Set the text color on the button
+                    backgroundColor:
+                        AppColors.correct, // Set the button's background color
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                          25), // Rounded corners for button
+                    ),
+                  ),
+                  child: const Text(
+                    'Magpatuloy',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontFamily: AppFonts
+                          .fcb, // Set the font family for the button text
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showIncorrectAnswerDialog(String correctAnswer) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          // Use Dialog instead of AlertDialog for more customization
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12), // Rounded corners
+          ),
+          elevation: 10, // Shadow effect
+          child: Container(
+            padding: const EdgeInsets.all(20), // Padding inside the dialog
+            decoration: BoxDecoration(
+              color: AppColors
+                  .secondaryBackground, // Background color of the dialog
+              borderRadius:
+                  BorderRadius.circular(12), // Match the shape's border radius
+            ),
+            child: Column(
+              mainAxisSize:
+                  MainAxisSize.min, // Size the dialog to fit its content
+              children: [
+                const Text(
+                  'Oops! Maling sagot',
                   style: TextStyle(
-                    fontSize: 18,
-                    fontFamily: AppFonts.fcb, // Set the font family for the button text
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                    fontFamily:
+                        AppFonts.fcb, // Set the font family for the title
                   ),
                 ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
+                const SizedBox(height: 10),
+                Text(
+                  'Ang tamang sagot ay "$correctAnswer"',
+                  style: const TextStyle(
+                    fontSize: 21,
+                    fontFamily:
+                        AppFonts.fcr, // Set the font family for the content
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: AppColors
+                        .primaryBackground, // Set the text color on the button
+                    backgroundColor:
+                        AppColors.wrong, // Set the button's background color
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                          25), // Rounded corners for button
+                    ),
+                  ),
+                  child: const Text(
+                    'Ulitin',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontFamily: AppFonts
+                          .fcb, // Set the font family for the button text
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
-
-
+        );
+      },
+    );
+  }
 
   void _toggleOption(String option) {
     setState(() {
@@ -436,12 +450,11 @@ void _showCompletionDialog() {
                   10), // Add spacing between the image and the text container
           Container(
             decoration: BoxDecoration(
-              color: AppColors.primaryBackground,
-              borderRadius: BorderRadius.circular(15),
-            ),
+                color: AppColors.secondaryBackground,
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(width: 1)),
             child: SizedBox(
-              width: MediaQuery.of(context).size.width / 2,
-              height: MediaQuery.of(context).size.width / 3,
+              width: MediaQuery.of(context).size.width * 0.55,
               child: Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: Center(

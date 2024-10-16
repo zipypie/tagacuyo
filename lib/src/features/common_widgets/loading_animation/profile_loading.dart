@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:taga_cuyo/src/features/constants/colors.dart';
 
 class ProfileLoadingShimmer extends StatelessWidget {
   const ProfileLoadingShimmer({super.key});
@@ -14,8 +15,8 @@ class ProfileLoadingShimmer extends StatelessWidget {
             // Header Section (Shimmer Effect)
             Container(
               height: 100,
-              decoration: BoxDecoration(
-                color: Colors.lightBlue[100],
+              decoration: const BoxDecoration(
+                color: AppColors.primaryBackground,
               ),
               child: Padding(
                 padding: const EdgeInsets.only(left: 20.0),

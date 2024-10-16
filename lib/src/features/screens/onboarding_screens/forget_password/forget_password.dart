@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:taga_cuyo/src/features/common_widgets/button.dart';
-import 'package:taga_cuyo/src/features/common_widgets/snack_bar.dart';
+import 'package:taga_cuyo/src/features/common_widgets/custom_alert_dialog.dart';
 import 'package:taga_cuyo/src/features/common_widgets/text_input.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
@@ -41,7 +41,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
       await FirebaseAuth.instance.sendPasswordResetEmail(
         email: emailController.text,
       );
-      showSnackBar(context, 'Naipadala na sa iyong email ang link sa pag-reset ng password.');
+      showCustomAlertDialog(context, 'Matagumpay','Naipadala na sa iyong email ang link sa pag-reset ng password.');
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         // If no account exists, show an error message

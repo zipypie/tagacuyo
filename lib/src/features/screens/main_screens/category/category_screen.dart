@@ -163,6 +163,16 @@ class _CategoryScreenState extends State<CategoryScreen>
   // Check if the subcategory is completed
   bool isCompleted = completedSubcategories.contains(subcategory.id);
 
+  final contentWidth = MediaQuery.of(context).size.width;
+
+  // Determine font size based on screen width
+  double fontSize;
+  if (contentWidth < 320) {
+    fontSize = 16; // Smaller font for narrow screens
+  } else {
+    fontSize = 19; // Medium font for medium-width screens
+  } 
+
   return GestureDetector(
     onTap: () {
       Navigator.push(
@@ -179,7 +189,7 @@ class _CategoryScreenState extends State<CategoryScreen>
       );
     },
     child: SizedBox(
-      width: MediaQuery.of(context).size.width / 3,
+      width: contentWidth * 0.33,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -192,8 +202,8 @@ class _CategoryScreenState extends State<CategoryScreen>
               ),
               borderRadius: BorderRadius.circular(20),
             ),
-            width: 120,
-            height: 120,
+            width: contentWidth*0.3,
+            height:  contentWidth*0.3,
             child: imagePath.isNotEmpty
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(15.0),
@@ -215,13 +225,12 @@ class _CategoryScreenState extends State<CategoryScreen>
             height: MediaQuery.of(context).size.height*0.06, // Adjust this height as needed
             child: Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: AppFonts.fcr,
-                fontSize: 19,
+                fontSize: fontSize,
               ),
               textAlign: TextAlign.center,
               maxLines: 2, // Limit to two lines to prevent overflow
-              overflow: TextOverflow.ellipsis, // Add ellipsis for long text
             ),
           ),
         ],

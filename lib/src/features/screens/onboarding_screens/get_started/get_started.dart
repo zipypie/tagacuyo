@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
-import 'package:taga_cuyo/src/features/constants/logo.dart';
+import 'package:taga_cuyo/src/features/constants/images.dart';
 import 'package:taga_cuyo/src/features/screens/onboarding_screens/login/login.dart';
 
 class GetStartedPage extends StatelessWidget {
@@ -30,12 +30,17 @@ class GetStartedPage extends StatelessWidget {
               Expanded(
                 flex: 3,
                 child: Container(
-                  color: AppColors.primaryBackground,
+                  color: const Color.fromARGB(255, 255, 248, 248),
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      FittedBox(
-                        fit: BoxFit.cover,
-                        child: Image.asset(imagePath),
+                      // Using Flexible to adapt the image size
+                      Flexible(
+                        child: Image.asset(
+                          imagePath,
+                          fit: BoxFit.cover, // Ensures the image covers the space
+                          width: double.infinity,
+                        ),
                       ),
                     ],
                   ),
@@ -46,7 +51,10 @@ class GetStartedPage extends StatelessWidget {
                 child: Container(
                   color: AppColors.secondaryBackground,
                   child: Padding(
-                    padding: const EdgeInsets.all(50.0),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: MediaQuery.of(context).size.width * 0.1, // Responsive padding
+                      vertical: MediaQuery.of(context).size.height * 0.05,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -118,20 +126,23 @@ class GetStartedScreenState extends State<GetStartedScreen> {
   final List<Map<String, dynamic>> pages = [
     {
       'title': 'Mag-aral ng Wika',
-      'text': 'Tuklasin ang yaman ng mga wika at palawakin ang iyong kaalaman sa Tagalog at Cuyonon',
-      'imagePath': LogoImage.logoPath,
+      'text':
+          'Tuklasin ang yaman ng mga wika at palawakin ang iyong kaalaman sa Tagalog at Cuyonon',
+      'imagePath': LocalImages.getStarted1,
       'buttonText': 'Sunod na Pahina',
     },
     {
       'title': 'Agad na Isalin',
-      'text': 'Mabilis na isalin ang mga salita at parirala, para sa mas mahusay na komunikasyon!',
-      'imagePath': LogoImage.logoPath,
+      'text':
+          'Mabilis na isalin ang mga salita at parirala, para sa mas mahusay na komunikasyon!',
+      'imagePath': LocalImages.getStarted2,
       'buttonText': 'Sunod na Pahina',
     },
     {
       'title': 'Subaybayan ang Iyong Pag-unlad',
-      'text': 'Subaybayan ang iyong progreso sa pag-aaral at makita ang iyong mga tagumpay!',
-      'imagePath': LogoImage.logoPath,
+      'text':
+          'Subaybayan ang iyong progreso sa pag-aaral at makita ang iyong mga tagumpay!',
+      'imagePath': LocalImages.getStarted3,
       'buttonText': 'Magsimula',
     },
   ];
@@ -183,7 +194,8 @@ class GetStartedScreenState extends State<GetStartedScreen> {
               return GetStartedPage(
                 titleText: pages[index]['title'],
                 text: pages[index]['text'],
-                onNext: () => goToNextPage(context), // Pass context to the method
+                onNext: () =>
+                    goToNextPage(context), // Pass context to the method
                 buttonText: pages[index]['buttonText'],
                 imagePath: pages[index]['imagePath'],
               );

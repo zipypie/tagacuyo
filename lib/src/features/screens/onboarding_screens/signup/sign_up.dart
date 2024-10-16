@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:taga_cuyo/src/features/common_widgets/button.dart';
 import 'package:taga_cuyo/src/features/common_widgets/dropdown_input.dart';
-import 'package:taga_cuyo/src/features/common_widgets/snack_bar.dart';
 import 'package:taga_cuyo/src/features/common_widgets/text_input.dart';
 import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/constants/fontstyles.dart';
 import 'package:taga_cuyo/src/features/constants/logo.dart';
 import 'package:taga_cuyo/src/features/screens/onboarding_screens/login/login.dart';
 import 'package:taga_cuyo/src/features/services/authentication.dart';
+import 'package:taga_cuyo/src/features/common_widgets/custom_alert_dialog.dart'; // Import your custom alert dialog
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -22,7 +22,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
-  String? selectedGender; // Variable to store selected gender
+  String? selectedGender;
   bool isLoading = false;
 
   void signUpUser() async {
@@ -33,9 +33,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
         passwordController.text.isEmpty ||
         ageController.text.isEmpty ||
         selectedGender == null) {
-      showSnackBar(context, "Pakipunan ang lahat ng form");
+      await showCustomAlertDialog(
+        context,
+        'Error',
+        'Pakipunan ang lahat ng form',
+      );
       return;
     }
+
+    setState(() {
+      isLoading = true; // Show loading indicator
+    });
 
     // Sign up the user using the AuthService
     String res = await AuthService().signUpUser(
@@ -47,39 +55,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
       gender: selectedGender!,
     );
 
+    setState(() {
+      isLoading = false; // Hide loading indicator
+    });
+
     // Handle the result
     if (res == "Success") {
-      setState(() {
-        isLoading = true;
-      });
-      
-      // Show success dialog
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            content: const Text('Ang iyong account ay matagumpay na nalikha.'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context); // Close the dialog
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SignInScreen()),
-                  );
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
+      await showCustomAlertDialog(
+        context,
+        'Success',
+        'Ang iyong account ay matagumpay na nalikha.',
+        buttonText: 'OK',
+      );
+
+      // Navigate to SignInScreen after closing the dialog
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SignInScreen()),
       );
     } else {
-      setState(() {
-        isLoading = false;
-        showSnackBar(context, res);
-      });
+      await showCustomAlertDialog(
+        context,
+        'Error',
+        res,
+      );
     }
   }
 
@@ -87,48 +86,53 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
-      backgroundColor: AppColors.primaryBackground,
+      backgroundColor: AppColors.secondaryBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                width: double.infinity,
-                height: height / 3.5,
-                child: LogoImage.logo,
-              ),
-              const Center(
+              Container(
+                color: AppColors.primaryBackground,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      'Magrehistro',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        letterSpacing: 1,
-                        fontFamily: AppFonts.kanitLight,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                      ),
+                    SizedBox(
+                      width: double.infinity,
+                      height: height / 3.5,
+                      child: LogoImage.logo,
                     ),
-                    SizedBox(height: 20),
-                    Text(
-                      'Punan ang form na nasa ibaba',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        letterSpacing: 1,
-                        fontFamily: AppFonts.kanitLight,
-                        fontSize: 16,
+                    const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Magrehistro',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              letterSpacing: 1,
+                              fontFamily: AppFonts.kanitLight,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          SizedBox(height: 20),
+                          Text(
+                            'Punan ang form na nasa ibaba',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              letterSpacing: 1,
+                              fontFamily: AppFonts.kanitLight,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
               Container(
-                height: height / 1.65,
-                padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 15),
+                width: MediaQuery.of(context).size.width,
+                padding: const EdgeInsets.fromLTRB(25, 15, 25, 15),
                 decoration: const BoxDecoration(
                   color: AppColors.secondaryBackground,
                 ),
@@ -172,7 +176,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       },
                     ),
                     const SizedBox(height: 20),
-                    MyButton(onTab: signUpUser, text: "Isumite"),
+                    // Show loading indicator or button
+                    isLoading
+                        ? const CircularProgressIndicator() // Loading spinner
+                        : MyButton(onTab: signUpUser, text: "Isumite"),
                     const SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -192,7 +199,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             );
                           },
                           child: const Text(
-                            ' Login',
+                            ' Login.',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -211,3 +218,5 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 }
+
+

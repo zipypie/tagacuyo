@@ -4,7 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:taga_cuyo/src/features/screens/onboarding_screens/dialogSurvey/dialog_survey.dart';
+import 'package:taga_cuyo/src/features/screens/main_screens/home/dialogSurvey/dialog_survey.dart';
 import 'package:taga_cuyo/src/features/services/auth_wrapper.dart';
 import 'package:taga_cuyo/src/features/services/authentication.dart';
 import 'package:taga_cuyo/src/features/services/day_count.dart';
@@ -12,7 +12,7 @@ import 'package:taga_cuyo/src/features/services/streak_count.dart';
 import 'package:taga_cuyo/src/features/services/user_service.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/profile_bloc.dart';
 import 'package:taga_cuyo/src/features/utils/logger.dart';
-import 'package:taga_cuyo/src/features/utils/user_session_manager.dart';
+import 'package:taga_cuyo/src/features/services/user_session_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

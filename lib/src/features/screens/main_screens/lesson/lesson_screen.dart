@@ -84,6 +84,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
           _lessonHeader(context),
           const SizedBox(height: 20),
           Expanded(
+            // Wrapping the StreamBuilder in Expanded to prevent overflow
             child: StreamBuilder<LessonState>(
               stream: _lessonBloc.stateStream,
               builder: (context, snapshot) {
@@ -211,145 +212,147 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
           ),
         );
       },
-      child: Column(
-        children: [
-          Text(
-            '${lesson['id']}', // Use lesson id for the lesson number
-            style: const TextStyle(
-              fontFamily: AppFonts.fcr,
-              fontSize: 18,
-              color: Color.fromARGB(255, 156, 156, 156),
-            ),
-            textAlign: TextAlign.center, // Center the text
-          ),
-          Container(
-            width: containerWidth,
-            height: containerWidth, // Set height equal to width for a square
-            margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
-  
-            child: FutureBuilder<bool>(
-              future:
-                  lessonProgressService.isLessonCompleted(userId, lesson['id']),
-              builder: (context, snapshot) {
-                // Check the connection state
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                      child:
-                          CircularProgressIndicator()); // Centered loading state for completion check
-                }
-
-                // Check if there was an error or if the data is not available
-                if (snapshot.hasError) {
-                  return const Center(
-                      child: Icon(Icons.error,
-                          size: 60)); // Show error icon if there was an error
-                }
-
-                // Check if the lesson is completed
-                if (snapshot.hasData && snapshot.data == true) {
-                  // Change border color to green if completed
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryBackground,
-                      borderRadius: BorderRadius.circular(25),
-                      border: Border.all(
-                        color: Colors.green, // Change border color to green
-                        width: 12,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    // Place child widgets for completed lesson inside this Container
-                    child: _buildLessonContent(lesson),
-                  );
-                } else {
-                  // Default state for not completed
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryBackground,
-                      borderRadius: BorderRadius.circular(25),
-                      border: Border.all(
-                        color: AppColors.accentColor, // Default transparent border
-                        width: 12,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    // Place child widgets for not completed lesson inside this Container
-                    child: _buildLessonContent(lesson),
-                  );
-                }
-              },
-            ),
-          ),
-          // Move the lesson name outside the container
-          Padding(
-            padding: const EdgeInsets.symmetric(
-                vertical: 4), // Optional padding for spacing
-            child: Text(
-              capitalizeFirstLetter(
-                  lesson['lesson_name']), // Display lesson name safely
+      child: SizedBox(
+        width: containerWidth*0.9,
+        height: containerWidth * 1.4,
+        child: Column(
+          children: [
+            Text(
+              '${lesson['id']}', // Use lesson id for the lesson number
               style: const TextStyle(
-                fontSize: 18,
                 fontFamily: AppFonts.fcr,
-                color: Color.fromARGB(255, 0, 0, 0),
+                fontSize: 18,
+                color: Color.fromARGB(255, 156, 156, 156),
               ),
               textAlign: TextAlign.center, // Center the text
             ),
-          ),
-        ],
+            SizedBox(
+              width: containerWidth * 0.8,
+              height: containerWidth * 0.8,
+              child: FutureBuilder<bool>(
+                future: lessonProgressService.isLessonCompleted(
+                    userId, lesson['id']),
+                builder: (context, snapshot) {
+                  // Check the connection state
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                        child:
+                            CircularProgressIndicator()); // Centered loading state for completion check
+                  }
+
+                  // Check if there was an error or if the data is not available
+                  if (snapshot.hasError) {
+                    return const Center(
+                        child: Icon(Icons.error,
+                            size: 60)); // Show error icon if there was an error
+                  }
+
+                  // Check if the lesson is completed
+                  if (snapshot.hasData && snapshot.data == true) {
+                    // Change border color to green if completed
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryBackground,
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: Colors.green, // Change border color to green
+                          width: 5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      // Place child widgets for completed lesson inside this Container
+                      child: _buildLessonContent(lesson),
+                    );
+                  } else {
+                    // Default state for not completed
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryBackground,
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: AppColors
+                              .accentColor, // Default transparent border
+                          width: 12,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      // Place child widgets for not completed lesson inside this Container
+                      child: _buildLessonContent(lesson),
+                    );
+                  }
+                },
+              ),
+            ),
+            // Move the lesson name outside the container
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                  vertical: 4), // Optional padding for spacing
+              child: Text(
+                capitalizeFirstLetter(
+                    lesson['lesson_name']), // Display lesson name safely
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontFamily: AppFonts.fcr,
+                  color: Color.fromARGB(255, 0, 0, 0),
+                ),
+                textAlign: TextAlign.center, // Center the text
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
 // Helper method to build lesson content
   Widget _buildLessonContent(Map<String, dynamic> lesson) {
-    // This method can be used to create content for the lesson
-    return Padding(
-      padding: const EdgeInsets.all(8.0), // Padding around the image
-      child: Column(
-        children: [
-          Expanded(
-            child: FutureBuilder<String>(
-              future: _lessonBloc.fetchImageFromStorage(
-                  lesson['image_path'] ?? ''), // Use image_path directly
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                      child:
-                          CircularProgressIndicator()); // Centered loading state for image
-                }
-
-                if (snapshot.hasError ||
-                    !snapshot.hasData ||
-                    snapshot.data!.isEmpty) {
-                  return const Center(
-                      child: Icon(Icons.error,
-                          size: 60)); // Show error icon if image fetch fails
-                }
-                return FittedBox(
-                  fit: BoxFit.cover, // Ensure image covers the box
-                  child: Image.network(
-                    snapshot.data!,
-                  ),
-                );
-              },
-            ),
+    return Column(
+      children: [
+        // You can give a fixed height and width to the container
+        SizedBox(
+          height: 120, // You can adjust the height and width as needed
+          width: 120,
+          child: FutureBuilder<String>(
+            future: _lessonBloc.fetchImageFromStorage(
+                lesson['image_path'] ?? ''), // Use image_path directly
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                    child: CircularProgressIndicator()); // Loading state
+              }
+    
+              if (snapshot.hasError ||
+                  !snapshot.hasData ||
+                  snapshot.data!.isEmpty) {
+                return const Center(
+                    child: Icon(Icons.error,
+                        size: 60)); // Error state if image fetch fails
+              }
+    
+              return FittedBox(
+                fit: BoxFit.cover, // Ensure the image covers the box
+                child: Image.network(
+                  snapshot.data!,
+                ),
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
