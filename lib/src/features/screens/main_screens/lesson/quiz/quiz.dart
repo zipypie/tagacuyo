@@ -1,4 +1,6 @@
 // lesson_quiz_screen.dart
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:taga_cuyo/src/features/common_widgets/button.dart';
 import 'package:taga_cuyo/src/features/common_widgets/custom_alert_dialog.dart';
@@ -137,20 +139,18 @@ class LessonQuizScreenState extends State<LessonQuizScreen> {
     });
   }
 
-void _showCompletionDialog() {
-  showCustomAlertDialog(
-    context,
-    'Binabati kita!', // Title of the dialog
-    'Natapos mo na ang pagsubok sa aralin.', // Content of the dialog
-    buttonText: 'OK', // Button text
-  ).then((_) {
-    // Navigate back to the LessonScreenPage
-    Navigator.of(context).popUntil((route) => 
-      route.settings.name == 'LessonScreenPage' || route.isFirst
-    );
-  });
-}
-
+  void _showCompletionDialog() {
+    showCustomAlertDialog(
+      context,
+      'Binabati kita!', // Title of the dialog
+      'Natapos mo na ang pagsubok sa aralin.', // Content of the dialog
+      buttonText: 'OK', // Button text
+    ).then((_) {
+      // Navigate back to the LessonScreenPage
+      Navigator.of(context).popUntil((route) =>
+          route.settings.name == 'LessonScreenPage' || route.isFirst);
+    });
+  }
 
   void _showCorrectAnswerDialog(String correctAnswer) {
     showDialog(
@@ -433,8 +433,8 @@ void _showCompletionDialog() {
     return Container(
       height: MediaQuery.of(context).size.width / 2.5,
       padding: const EdgeInsets.fromLTRB(0, 25, 0, 25),
-      decoration: BoxDecoration(
-        color: Colors.lightBlue[100],
+      decoration: const BoxDecoration(
+        color: Color.fromARGB(255, 247, 236, 186),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -450,42 +450,54 @@ void _showCompletionDialog() {
                   10), // Add spacing between the image and the text container
           Container(
             decoration: BoxDecoration(
-                color: AppColors.secondaryBackground,
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(width: 1)),
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.55,
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Center(
-                  // Center the content within this container
-                  child: _isLoading
-                      ? const Text(
-                          'Loading...',
-                          style: TextStyle(fontSize: 16),
-                        )
-                      : _words.isNotEmpty && _currentWordIndex < _words.length
-                          ? Text(
-                              capitalizeFirstLetter(
-                                  _words[_currentWordIndex]['word']),
-                              textAlign:
-                                  TextAlign.center, // Center text alignment
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  fontFamily: AppFonts.kanitLight,
-                                  fontWeight: FontWeight.w900),
-                            )
-                          : const Text(
-                              'Hindi matagpuan ang salita',
-                              textAlign:
-                                  TextAlign.center, // Center text alignment
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red,
-                              ),
-                            ),
+              color: AppColors.primaryBackground,
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: 5, // Blur to soften the shadow edges
+                  spreadRadius: 2, // Keep the shadow focused
+                  offset:
+                      const Offset(12, 12), // Slightly off to the bottom right
                 ),
+                const BoxShadow(
+                  color: Colors
+                      .transparent, // Use transparent to avoid shadow on top and left
+                  blurRadius: 5, // Same blur radius
+                  spreadRadius: 2,
+                  offset: Offset(2, -2), // Slightly off to the top right
+                ),
+              ],
+            ),
+            // ignore: sized_box_for_whitespace
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Center(
+                child: _isLoading
+                    ? const Text(
+                        'Loading...',
+                        style: TextStyle(fontSize: 16),
+                      )
+                    : _words.isNotEmpty && _currentWordIndex < _words.length
+                        ? Text(
+                            capitalizeFirstLetter(
+                                _words[_currentWordIndex]['word']),
+                            textAlign:
+                                TextAlign.center, // Center text alignment
+                            style: const TextStyle(
+                                fontSize: 19, fontFamily: AppFonts.fcb),
+                          )
+                        : const Text(
+                            'Hindi matagpuan ang salita',
+                            textAlign:
+                                TextAlign.center, // Center text alignment
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red,
+                            ),
+                          ),
               ),
             ),
           ),
