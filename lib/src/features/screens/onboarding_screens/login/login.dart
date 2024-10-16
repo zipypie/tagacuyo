@@ -100,132 +100,128 @@ Widget build(BuildContext context) {
   return Scaffold(
     backgroundColor: AppColors.secondaryBackground,
     body: SafeArea(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            color: AppColors.primaryBackground,
-            child: Column(
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  height: height * 0.33,
-                  child: LogoImage.logo,
-                ),
-                Container(
-                  margin: const EdgeInsets.all(30),
-                  child: const Center(
-                    child: Text(
-                      'Maligayang Pagdating sa Taga-Cuyo: Tagalog-Cuyonon isang Pagsasalin at Pag-aaral gamit ang Aplikasyon',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        letterSpacing: 1,
-                        fontFamily: AppFonts.kanitLight,
-                        fontSize: 16,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              color: AppColors.primaryBackground,
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: height * 0.33,
+                    child: LogoImage.logo,
+                  ),
+                  Container(
+                    margin: const EdgeInsets.all(30),
+                    child: const Center(
+                      child: Text(
+                        'Maligayang Pagdating sa Taga-Cuyo: Tagalog-Cuyonon isang Pagsasalin at Pag-aaral gamit ang Aplikasyon',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          letterSpacing: 1,
+                          fontFamily: AppFonts.kanitLight,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 5.0),
-                      child: Text(
-                        'Mag-log in',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontFamily: AppFonts.kanitLight,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextFieldInputF(
-                      textEditingController: emailController,
-                      hintText: "E-mail",
-                      icon: Icons.email,
-                    ),
-                    const SizedBox(height: 10),
-                    TextFieldInputF(
-                      textEditingController: passwordController,
-                      hintText: "Password",
-                      icon: Icons.lock,
-                      isPass: true,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const ForgetPasswordScreen(),
-                              ),
-                            );
-                          },
-                          child: const Text(
-                            'Nakalimutan ang password',
-                            style: TextStyle(
-                              fontFamily: AppFonts.kanitLight,
-                              fontSize: 16,
-                              color: Color.fromARGB(255, 47, 87, 234),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    // Display a loading indicator when signing in
-                    isLoading
-                        ? const CircularProgressIndicator()
-                        : MyButton(onTab: signInUser, text: "Mag-login"),
-                    SizedBox(height: height / 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Wala pang account? Piliin ang',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const SignUpScreen(),
-                              ),
-                            );
-                          },
-                          child: const Text(
-                            ' SignUp.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                ],
               ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 5.0),
+                    child: Text(
+                      'Mag-log in',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontFamily: AppFonts.kanitLight,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextFieldInputF(
+                    textEditingController: emailController,
+                    hintText: "E-mail",
+                    icon: Icons.email,
+                  ),
+                  const SizedBox(height: 10),
+                  TextFieldInputF(
+                    textEditingController: passwordController,
+                    hintText: "Password",
+                    icon: Icons.lock,
+                    isPass: true,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ForgetPasswordScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Nakalimutan ang password',
+                          style: TextStyle(
+                            fontFamily: AppFonts.kanitLight,
+                            fontSize: 16,
+                            color: Color.fromARGB(255, 47, 87, 234),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  isLoading
+                      ? const CircularProgressIndicator()
+                      : MyButton(onTab: signInUser, text: "Mag-login"),
+                  SizedBox(height: height / 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Wala pang account? Piliin ang',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SignUpScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          ' SignUp.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     ),
   );
 }
-
 }
