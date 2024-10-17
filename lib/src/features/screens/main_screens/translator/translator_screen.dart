@@ -43,8 +43,8 @@ class TranslatorScreen extends StatelessWidget {
                         height: 40,
                       ),
                     ),
-                    _buildInputContainer(cubit, state), // Pass state as a parameter
-                    _buildOutputContainer(cubit),
+                    _buildInputContainer(cubit, state, context), // Pass state as a parameter
+                    _buildOutputContainer(cubit, context),
                   ],
                 ),
               ),
@@ -55,7 +55,9 @@ class TranslatorScreen extends StatelessWidget {
     );
   }
 
-Widget _buildInputContainer(TranslatorBloc cubit, TranslatorState state) {
+Widget _buildInputContainer(TranslatorBloc cubit, TranslatorState state, BuildContext context) {
+  final width = (MediaQuery.of(context).size.width * 0.018).toInt(); // Convert to int here
+
   return Container(
     padding: const EdgeInsets.fromLTRB(30, 15, 30, 15),
     child: Column(
@@ -67,7 +69,7 @@ Widget _buildInputContainer(TranslatorBloc cubit, TranslatorState state) {
         ),
         TextField(
           controller: _inputController,
-          maxLines: 7,
+          maxLines: width, // Use the integer value
           onChanged: (text) {
             // Trim whitespace to avoid counting it as a character
             String trimmedText = text.trim();
@@ -77,9 +79,6 @@ Widget _buildInputContainer(TranslatorBloc cubit, TranslatorState state) {
             } else {
               cubit.add(TranslateText(trimmedText)); // Emit event for non-empty input
             }
-            // Dispatch event to update character count (this line can be omitted)
-            // You may remove this if you don't need to manually update
-            // cubit.add(UpdateCharacterCount(trimmedText.length)); 
           },
           decoration: InputDecoration(
             filled: true,
@@ -131,7 +130,10 @@ Widget _buildInputContainer(TranslatorBloc cubit, TranslatorState state) {
 }
 
 
-  Widget _buildOutputContainer(TranslatorBloc cubit) {
+
+  Widget _buildOutputContainer(TranslatorBloc cubit, BuildContext context) {
+    final width = (MediaQuery.of(context).size.width * 0.018).toInt(); 
+
     return Container(
       padding: const EdgeInsets.fromLTRB(30, 15, 30, 30),
       child: Column(
@@ -143,7 +145,7 @@ Widget _buildInputContainer(TranslatorBloc cubit, TranslatorState state) {
           ),
           TextField(
             controller: _outputController, // Use _outputController for output
-            maxLines: 7,
+            maxLines: width,
             readOnly:
                 true, // Make it read-only if it's just for displaying translation
             decoration: InputDecoration(

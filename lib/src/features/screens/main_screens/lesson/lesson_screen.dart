@@ -127,9 +127,10 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
 
   // Header Section
   Widget _lessonHeader(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
     return Container(
       width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.18,
+      height: height * 0.14,
       decoration: BoxDecoration(
         gradient: AppColors.boxGradient,
         borderRadius: BorderRadius.circular(15),
@@ -156,9 +157,13 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
                   crossAxisAlignment:
                       CrossAxisAlignment.start, // Align text to the left
                   children: [
-                    const Text(
+                    Text(
                       'Maligayang pagdating sa Taga-Cuyo',
-                      style: TextStyles.learningtitle,
+                      style: TextStyle(
+                        fontFamily: AppFonts.fcb,
+                        color: Color.fromARGB(255, 60, 63, 65),
+                        fontSize: height * 0.024,
+                      ),
                       textAlign: TextAlign.left, // Align text to the left
                     ),
                     const SizedBox(height: 10),
@@ -166,11 +171,11 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
                       padding: const EdgeInsets.only(left: 20),
                       child: Text(
                         'Aralin $lessonProgress / $maxLength',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: AppFonts
                               .fcr, // Ensure this font is defined in your pubspec.yaml
-                          fontSize:
-                              16, // You can adjust the font size as needed
+                          fontSize: height *
+                              0.021, // You can adjust the font size as needed
                           color: Color.fromARGB(
                               255, 73, 109, 126), // Use a color if needed
                         ),
@@ -181,11 +186,11 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
                 ),
               ),
             ),
-            const SizedBox(
+            SizedBox(
               child: CustomImage(
                 src: 'assets/images/monkey.png',
-                width: 100, // Fixed width for the image
-                height: 100,
+                width: height * 0.11, // Fixed width for the image
+                height: height * 0.11,
               ),
             ),
           ],
@@ -198,6 +203,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
       BuildContext context, Map<String, dynamic> lesson, String userId) {
     double containerWidth = MediaQuery.of(context).size.width / 2 -
         37; // Half of screen width minus margin
+        final width = MediaQuery.of(context).size.width;
 
     return GestureDetector(
       onTap: () {
@@ -213,15 +219,15 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
         );
       },
       child: SizedBox(
-        width: containerWidth*0.9,
+        width: containerWidth * 0.9,
         height: containerWidth * 1.4,
         child: Column(
           children: [
             Text(
               '${lesson['id']}', // Use lesson id for the lesson number
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: AppFonts.fcr,
-                fontSize: 18,
+                fontSize: width *0.047,
                 color: Color.fromARGB(255, 156, 156, 156),
               ),
               textAlign: TextAlign.center, // Center the text
@@ -304,8 +310,8 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
               child: Text(
                 capitalizeFirstLetter(
                     lesson['lesson_name']), // Display lesson name safely
-                style: const TextStyle(
-                  fontSize: 18,
+                style: TextStyle(
+                  fontSize: width *0.05,
                   fontFamily: AppFonts.fcr,
                   color: Color.fromARGB(255, 0, 0, 0),
                 ),
@@ -334,7 +340,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
                 return const Center(
                     child: CircularProgressIndicator()); // Loading state
               }
-    
+
               if (snapshot.hasError ||
                   !snapshot.hasData ||
                   snapshot.data!.isEmpty) {
@@ -342,7 +348,7 @@ class _LessonScreenPageState extends State<LessonScreenPage> {
                     child: Icon(Icons.error,
                         size: 60)); // Error state if image fetch fails
               }
-    
+
               return FittedBox(
                 fit: BoxFit.cover, // Ensure the image covers the box
                 child: Image.network(

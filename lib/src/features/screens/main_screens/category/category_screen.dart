@@ -79,7 +79,7 @@ class _CategoryScreenState extends State<CategoryScreen>
       builder: (context, snapshot) {
         int completedCount = snapshot.data ?? 0; // Get the completed count
         return Container(
-          height: 247,
+          height: MediaQuery.of(context).size.height * 0.277,
           decoration: const BoxDecoration(
             border: Border(
               bottom: BorderSide(width: 3, color: Color.fromARGB(255, 96, 96, 96)),
@@ -165,13 +165,6 @@ class _CategoryScreenState extends State<CategoryScreen>
 
     final contentWidth = MediaQuery.of(context).size.width;
 
-    // Determine font size based on screen width
-    double fontSize;
-    if (contentWidth < 320) {
-      fontSize = 14; // Smaller font for narrow screens
-    } else {
-      fontSize = 18; // Medium font for medium-width screens
-    } 
 
     return GestureDetector(
       onTap: () {
@@ -227,7 +220,7 @@ class _CategoryScreenState extends State<CategoryScreen>
                 title,
                 style: TextStyle(
                   fontFamily: AppFonts.fcr,
-                  fontSize: fontSize,
+                  fontSize: contentWidth*0.045,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2, // Limit to two lines to prevent overflow

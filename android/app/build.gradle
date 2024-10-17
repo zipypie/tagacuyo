@@ -7,24 +7,24 @@ plugins {
 
 android {
     namespace = "com.example.taga_cuyo"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdkVersion 34 // Explicitly specify the compileSdkVersion
+    ndkVersion = "22.1.7171670" // If needed, otherwise remove this line
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17 // Use Java 17
-        targetCompatibility = JavaVersion.VERSION_17 // Use Java 17
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = "17" // Java 17 JVM target as string
+        jvmTarget = "17"
     }
 
     defaultConfig {
         applicationId = "com.example.taga_cuyo"
-        minSdk = 23 // Your desired minimum SDK version
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        minSdkVersion 23 // Minimum Android API level
+        targetSdkVersion 33 // Explicitly specify the targetSdkVersion
+        versionCode 1 // Application version code
+        versionName "1.0" // Application version name
     }
 
     buildTypes {
@@ -37,3 +37,4 @@ android {
 flutter {
     source = "../.."
 }
+
