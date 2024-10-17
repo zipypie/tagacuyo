@@ -52,7 +52,7 @@ class ProfileScreen extends StatelessWidget {
               ),
             );
           } else if (state is ProfileError) {
-            return Center(child: Text(state.message));
+            return Center(child: Text('Walang Internet Connection'));
           } else {
             return const Center(child: Text('Unknown state'));
           }

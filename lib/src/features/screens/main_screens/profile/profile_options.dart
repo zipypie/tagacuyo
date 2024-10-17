@@ -3,6 +3,7 @@ import 'package:taga_cuyo/src/features/constants/colors.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/change_password/change_password_page.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/feedback/feedback.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/logout/logout.dart';
+import 'package:taga_cuyo/src/features/screens/main_screens/profile/support/submit_ticket.dart';
 import 'package:taga_cuyo/src/features/screens/main_screens/profile/update_profile/update_profile.dart';
 
 class ProfileOptions extends StatelessWidget {
@@ -40,6 +41,12 @@ class ProfileOptions extends StatelessWidget {
                     MaterialPageRoute(
                         builder: (context) => const FeedbackScreen()),
                   );
+                case 'Magsumite ng ticket':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const SupportTicketForm()),
+                  );
                   break;
                 case 'Logout':
                   showDialog(
@@ -71,6 +78,13 @@ class ProfileOptions extends StatelessWidget {
                 child: ListTile(
                   leading: Icon(Icons.help_center),
                   title: Text('Magbigay katugunan'),
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'Magsumite ng ticket',
+                child: ListTile(
+                  leading: Icon(Icons.support_agent_outlined),
+                  title: Text('Magsumite ng ticket'),
                 ),
               ),
               const PopupMenuItem<String>(
