@@ -195,8 +195,8 @@ class _CategoryScreenState extends State<CategoryScreen>
                 ),
                 borderRadius: BorderRadius.circular(20),
               ),
-              width: contentWidth * 0.3, // 30% of the screen width
-              height: contentWidth * 0.3, // 30% of the screen width for height
+              width: contentWidth * 0.27, // image size
+              height: contentWidth * 0.27, // 30% of the screen width for height
               child: imagePath.isNotEmpty
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(15.0),
@@ -215,12 +215,12 @@ class _CategoryScreenState extends State<CategoryScreen>
             const SizedBox(height: 5),
             // Ensuring a fixed height for the text container
             SizedBox(
-              height: 55, // Adjust this height as needed
+              height: contentWidth*0.15, // Adjust this height as needed
               child: Text(
                 title,
                 style: TextStyle(
                   fontFamily: AppFonts.fcr,
-                  fontSize: contentWidth*0.045,
+                  fontSize: contentWidth*0.049,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2, // Limit to two lines to prevent overflow
